@@ -1,5 +1,5 @@
 ---
-title: "Erroneous use of Venn diagram leads to artifacts in transcriptomic analyses"
+title: "Erroneous use of Venn diagrams leads to artifacts in transcriptomic analyses"
 author: "January Weiner^1,†^, Benedikt Obermayer^1^ and Dieter Beule^1^"
 date: "`r Sys.Date()`"
 outputoff:
@@ -7,8 +7,10 @@ outputoff:
 output:
   word_document:
     reference_docx: templates/template.docx
+outputoff2: 
   pdf_document:
     latex_engine: xelatex
+    keep_tex: true
 bibliography: manuscript.bib
 link-citations: true
 XXcsl: templates/nature-medicine.csl
@@ -24,9 +26,14 @@ Venn diagrams are frequently used to illustrate the results of
 differential expression analysis and further
 downstream functional analysis. Here we show that both, the use
 of Venn diagrams to find genes which are thought to be specific for a
-certain comparison, as well as gene set enrichment analysis applied to
-such subsets is a fallacy. Moreover, the combination of incorrect statistical reasoning
-and gene set enrichment analysis may result in particularly misleading artifacts.
+certain comparison, as well as gene set enrichment analysis applied to such
+subsets is a fallacy. Since genes which show a significant change in one
+condition but not in another are likely to be false negatives in the latter
+case, these genes considered to be specific for one condition are likely
+characteristic for both of the compared groups, and enriched in functions
+related to the research hypothesis. Thus, the combination of incorrect
+statistical reasoning and gene set enrichment analysis may result in
+particularly misleading artifacts.
 
 ```{r,echo=FALSE}
 ## Set default options for the knitr RMD processing
