@@ -1,25 +1,32 @@
 ---
-title: "Venn diagrams indicate erroneous analyses in transcriptomics"
-author: ""
+title: "Erroneous use of Venn diagram leads to artifacts in transcriptomic analyses"
+author: "January Weiner^1,†^, Benedikt Obermayer^1^ and Dieter Beule^1^"
 date: "`r Sys.Date()`"
-output:
+outputoff:
   html_document
-outputdupa:
+output:
   word_document:
     reference_docx: templates/template.docx
   pdf_document:
     latex_engine: xelatex
-abstract: |
-  Venn diagrams are frequently used to illustrate the results of
-  differential expression analysis, and are an illustration of further
-  downstream process of functional analysis. Here we show that both the use
-  of Venn diagrams to find genes which are thought to be specific for a
-  certain comparison as well as gene set enrichment analysis applied to
-  such subsets is a fallacy and results in particularly misleading artifacts.
 bibliography: manuscript.bib
 link-citations: true
 XXcsl: templates/nature-medicine.csl
 ---
+
+^1^ Berlin Institute of Health at Charité – Universitätsmedizin Berlin, Core Unit Bioinformatics, Charitéplatz 1, 10117 Berlin, Germany
+
+^†^ To whom the correspondence should be addressed
+
+## Abstract
+
+Venn diagrams are frequently used to illustrate the results of
+differential expression analysis and further
+downstream functional analysis. Here we show that both, the use
+of Venn diagrams to find genes which are thought to be specific for a
+certain comparison, as well as gene set enrichment analysis applied to
+such subsets is a fallacy. Moreover, the combination of incorrect statistical reasoning
+and gene set enrichment analysis may result in particularly misleading artifacts.
 
 ```{r,echo=FALSE}
 ## Set default options for the knitr RMD processing
@@ -67,7 +74,7 @@ inference incorrect, but it may also lead to misleading – although
 appealing – artifacts when combined with downstream analyses.
 
 Consider a gene for which the expression has been analysed in four groups:
-two different mouse strains (WT and KO) and two different experimental conditions
+two different mouse strains (wildtype, WT and knockout, KO) and two different experimental conditions
 (naive versus infected). We find that the gene expression significantly
 differs between infected and naive KO animals, but that there is no
 significant difference in the WT strain. Such a gene may be incorrectly
@@ -75,53 +82,60 @@ considered as "specific" to KO, and will be accordingly entered in a Venn
 diagram.
 
 However, this is a common fallacy [@nieuwenhuis2011erroneous], since lack
-of statistical significance is not the same as a significant lack of
+of statistical significance is not the same as testing for lack of
 difference. In other words, the fact that we failed to detect a significant
 difference in the WT does not mean that the difference is absent and
-significantly different from the difference in the KO. This "difference of
-differences" is known is statistics as interaction (here, interaction
-between strain and treatment).  In fact, the obtained p-values might be
-just over the assumed threshold in one, but just under it in the other
-strain (e.g. 0.009 vs 0.011), with the difference in both strains being
-essentially the same. The correct analysis is to test the significance of
-interaction using an ANOVA model. Notably, in 2011 Nieuwenhuis et al. found
-that in over 150 papers in top neuroscience journals where the authors
-could make this particular statistical error, half of them did.
+itself significantly different from the difference in the KO. This "difference of
+differences" is known is statistics as interaction [@blalock1965theory].
+Here, it is the interaction between strain and treatment.  In fact, the
+obtained p-values might be just over the assumed p-value threshold in one, but just
+under it in the other strain (e.g. 0.009 vs 0.011), with the difference in
+both strains being essentially the same. The correct analysis is to test
+the significance of interaction using an ANOVA model. Notably, in 2011
+Nieuwenhuis et al. found that in over 150 papers in top neuroscience
+journals where the authors could make this particular statistical error,
+half of them did.
 
-Using VDs to show genes "specific" for a condition amounts, therefore, to
+Using VDs to show genes "specific" for a condition amounts to
 counting the times a comparison for a gene was statistically significant in
 one condition, but not significant in another.
-
-More disturbingly, Venn diagrams are a visual illustration of a procedure
+More disturbingly, VDs are a visual illustration of a procedure
 that exacerbates this problem by applying a downstream analysis to
 supposedly specific sets of genes. Several cells in a Venn diagram contain
-variables that were selected based on the fact that they are significant in
-one, but not significant in another comparison. Variables in a cell may
-then be subsequently analysed to test whether a share a particular
+numbers corresponding to features (such as genes), for which there was a significant test result in
+one, but not in another comparison. The sets of genes in a Venn diagram cell may
+then be subsequently analysed to test whether they share a particular
 characteristics.  For example, gene set enrichment analysis may be used to
-interpret the biological function of genes that are "specific" to one
-condition, but - supposedly - not to another. It turns out that due to the
-fallacious nature of this procedure, this is likely to produce results that
-appear reasonably in the context of the analysed biology. This will be
-illustrated in the following with an example.
+interpret the biological function of genes that are considered "specific" to one
+condition. It turns out that due to the
+fallacious nature of this procedure, it is likely to produce results that
+appear to make sense in the given biological context.
 
 In this paper, we illustrate this rather simple statistical statement with
 a real world data set, demonstrating how choosing this sort of approach
-results in apparently sound gene set enrichment results, which are in fact
+results in apparently sound gene set enrichment results which are, in fact,
 artifacts. Next, we dissect the underlying mechanism of how these artifacts
-are generated.  Finally, we explore and demonstrate alternative approaches.
+are generated.  Finally, we discuss alternative approaches.
 
-# Results
+## Results
 
-## Example: Transcriptomic changes due to Sars-Cov-2 infection
+### Transcriptomic changes due to Sars-Cov-2 infection
 
-Consider two group of patients, G1 and G2. Each group contains 20
-individuals. In both groups, there are patients who are either healthy ("no
-infection") or infected with Sars-Cov-2 ("SC2"). Our aim is to understand
-which genes or pathways are specifically upregulated by SC2 infection in G1
-compared to G2, and vice versa. In the following, we used the data set
-GSE156063 [@mick2020upper] to perform two such analyses, which arrive to opposite
-conclusions.
+```{r}
+n_stratum <- 10 # 2 strata per condition 
+```
+
+
+Consider two group of patients, G1 and G2. Each group contains 
+`r n_stratum * 4`
+individuals. In both groups, there is an equal number of healthy
+individuals (labeled "Ctrl" on figures below) 
+or patients infected with Sars-Cov-2 (labeled "SC2"). Our aim is to understand
+the differences between G1 and G2 in the response to infection. For
+example, we ask which genes or pathways are specifically upregulated by SC2
+infection in G1 as compared to G2, and vice versa. In the following, we
+used the data set GSE156063 [@mick2020upper] in two approaches (an
+incorrect and the correct one) which arrive at opposite conclusions.
 
 ```{r pheno_data_download,eval=FALSE}
 ## this sometimes fails. The RDS of the object is provided
@@ -151,6 +165,7 @@ covar <- covar %>%
 ```
 
 ```{r featuredata_download}
+## the counts must be downloaded from GEO separately.
 if(!file.exists("GSE156063_swab_gene_counts.csv.gz")) {
   download.file("https://ftp.ncbi.nlm.nih.gov/geo/series/GSE156nnn/GSE156063/suppl/GSE156063_swab_gene_counts.csv.gz",
                 "GSE156063_swab_gene_counts.csv.gz")
@@ -190,9 +205,9 @@ set.seed(0123)
 #covar$disease <- covar$group
 
 g1 <- covar %>% mutate(n=1:n()) %>%
-  group_by(gender, disease) %>% slice_sample(n=10) %>% pull(n)
+  group_by(gender, disease) %>% slice_sample(n=n_stratum) %>% pull(n)
 g2 <- covar %>% mutate(n=1:n()) %>% filter(!n %in% g1) %>%
-  group_by(gender, disease) %>% slice_sample(n=10) %>% pull(n)
+  group_by(gender, disease) %>% slice_sample(n=n_stratum) %>% pull(n)
 
 #g1 <- sample(1:nrow(covar), 30)
 #g2 <- sample(setdiff(1:nrow(covar), g1), 30)
@@ -234,7 +249,7 @@ res.merged <- merge(res$g1, res$g2, by=c("ENSEMBL", "SYMBOL", "ENTREZID", "GENEN
 
 
 First, we have performed differential gene expression analysis for each of
-the groups G1 and G2 separately. For each comparison, we defined
+the groups G1 and G2 separately using standard bioinformatic tools. For each comparison, we defined
 genes with significantly different gene expression 
 (differentially expressed genes, DEGs) 
 by using an FDR threshold of 
@@ -248,25 +263,27 @@ in the G2 group. In total,
 `r sum(res.merged$DEG.g1 & res.merged$DEG.g2)` 
 DEGs were common for G1 and G2, 
 `r sum(res.merged$DEG.g1 & !res.merged$DEG.g2)` 
-DEGs were "specific" for G1, and 
+DEGs were significant in G1 only ("specific" for G1), and 
 `r sum(!res.merged$DEG.g1 & res.merged$DEG.g2)` 
-were "specific" for G2 (see Fig. IncorrectAnalysis, panel *A*).
-A naive interpretation of these results would indicate that while G1 shows
-an almost non-existent transcriptomic response to COVID-19, individuals in
-group G2 show massive regulation of gene expression. This (incorrectly)
-suggests that there is a substantial difference between these two groups of
-individuals.
+were significant in G2 only ("specific" for G2; see Fig. 1, panel *A*).
+A naive interpretation of these results implies that there is a substantial
+difference between these two groups of individuals, as evidenced by a small
+overlap in commonly regulated genes, while the majority of DEGs is
+significant in one comparison only.
 
 
 ```{r GO_db_prepare,cache=TRUE}
 library(msigdbr)
+min_mod_size <- 10
+max_mod_size <- 50
 msig_go_bp <- msigdbr(subcategory="GO:BP")
 mset <- makeTmodFromDataFrame(msig_go_bp, 
                               feature_col="human_gene_symbol", 
                               module_col="gs_exact_source", 
                               title_col="gs_name")
 mset$MODULES$N <- map_int(mset$MODULES$ID, ~ length(mset$MODULES2GENES[[.x]]))
-mset <- mset[ mset$MODULES$N <= 50 & mset$MODULES$N >= 10 ]
+mset <- mset[ mset$MODULES$N <= max_mod_size & 
+              mset$MODULES$N >= min_mod_size ]
 ```
 
 
@@ -289,17 +306,20 @@ gsea_res.merged <- merge(gsea_res$g1, gsea_res$g2, by=c("ID", "Title"), suffixes
 To understand which
 pathways are upregulated in each of the two groups, we used a standard generation I
 gene set enrichment analysis (GSEA) – a hypergeometric test – on the DEGs in each
-group. Gene sets for GSEA were taken from the Gene Ontology (GO) database
-(very large or very small gene sets were removed). For each group, we have
+group. Gene sets for GSEA were taken from the Gene Ontology (GO) database.
+Gene sets with more than `r max_mod_size` or 
+fewer than `r min_mod_size` genes were removed.
+For each group, we have
 selected only genes which are DEGs in that group, but not the other,
 mimicking a naive approach for finding "specifically" regulated pathways.
 Here, a similar picture
 emerged. Just
 `r nrow(gsea_res$g1)` gene sets were significantly enriched in G1, and
 `r nrow(gsea_res$g2)` gene sets were significantly enriched in G2. Again,
-both the Venn Diagram (Fig. IncorrectAnalysis, B) and the results of
-enrichments (Fig. IncorrectAnalysis, C and D) suggest that there is a
-fundamental difference between the groups. 
+both the Venn diagram (Fig. 1, B) and the results of
+enrichments (Fig. 1, C and D) suggest that there is a
+fundamental difference between the groups, and that the groups have little
+in common in their response to the virus.
 
 Importantly, the different GO terms enriched in the two groups were related
 to infectious diseases, and may tempt to speculate about the underlying
@@ -308,15 +328,15 @@ Toll like receptor 4 pathway in G1, but not G2; and, vice versa, significance of
 response to interleukin 7 in G2, but not in G1). 
 
 
-Fig. IncorrectAnalysis. **Results of differential gene expression analysis
-and gene set enrichment analysis using an incorrect Venn Diagram driven approach.**
-**A**, Venn Diagram showing numbers of differentially expressed genes (DEG)
-in each of the two groups, G1 and G2; **B**, Venn Diagram showing numbers
+**Fig. 1. Results of differential gene expression analysis
+and gene set enrichment analysis using an incorrect Venn diagram driven approach.**
+**A**, Venn diagram showing numbers of differentially expressed genes (DEG)
+in each of the two groups, G1 and G2; **B**, Venn diagram showing numbers
 of significantly enriched GO terms in each of the two groups; **C** results
 of gene set enrichment analysis for genes "specific" to group G1; **D**, results of gene set
 enrichment analysis for genes "specific" to group G2 (only top 10 terms are shown).
 
-```{r figIncorrectAnalysis, fig.width=15,fig.height=5.5}
+```{r fig1, fig.width=15,fig.height=5.5,dpi=300,dev="png"}
 p1 <- ggvenn(list(G1=res$g1 %>% filter(DEG) %>% pull(ENSEMBL),
                          G2=res$g2 %>% filter(DEG) %>% pull(ENSEMBL)),
              show_percentage=FALSE) +
@@ -344,9 +364,9 @@ In fact, repeated re-sampling always results in some genes being found to
 be significantly different in one group, but not the other, despite the
 fact that one does not expect any major differences between sets of
 individuals randomly drawn from one population. Thus, the conclusions drawn
-from a Venn Diagram – driven gene set enrichment analysis are artefactual. Closer
+from a Venn diagram-driven gene set enrichment analysis are artefactual. Closer
 inspection of genes which belong to DEG in one group, but not the other
-reveals the underlying statistical fallacy (Fig. BigReveal, *A* – *D*), that is, that difference
+reveals the underlying statistical fallacy (Fig. 2, *A* – *D*), that is, that difference
 between significant and non-significant is, in itself, not statistically
 significant [@gelman2006difference]. This does not necessarily mean that
 there are no differences at all between these two groups, but that lack of
@@ -373,29 +393,56 @@ tmod_res$int <- tmodCERNOtest(res$int %>% arrange(pvalue) %>% pull(SYMBOL),
                               mset=mset)
 ```
 
+```{r correlation_coefs}
+## calculate correlation coefficients for various groups of genes
+## all correlations are significant
+
+cors <- list()
+cors$all <- with(res.merged, 
+                cor(log2FoldChange.g1, log2FoldChange.g2))
+cors$sign <- with(res.merged %>% filter(DEG.g1 | DEG.g2), 
+                cor(log2FoldChange.g1, log2FoldChange.g2))
+cors$g1 <- with(res.merged %>% filter(DEG.g1 & !DEG.g2), 
+                cor(log2FoldChange.g1, log2FoldChange.g2))
+cors$g2 <- with(res.merged %>% filter(!DEG.g1 & DEG.g2), 
+                cor(log2FoldChange.g1, log2FoldChange.g2))
+
+```
+
+
 To find genes which are differentially regulated in the two groups, the
 correct statistical approach is to calculate interaction between groups
-(G1, G2) and disease status (no disease vs. COVID). For G1 and G2, no 
-genes show a significant interaction at FDR < 0.1. In fact, this is not
+(G1, G2) and disease status (no disease vs. COVID). While it may be argued
+that a test for interaction has lower power than a test for a simple
+contrast, no 
+genes show a significant interaction even at FDR < 0.1. In fact, this is not
 surprising. The log~2~ fold changes for comparisons withing G1 and G2 are
-correlated (Fig. BigReveal, *E*), and genes which have similar log~2~ fold
-changes in both comparisons may have a significant p-value in one group,
-but no significant p-value in the other group (e.g. Fig. BigReveal, *A*,
-*C* and *D*).
+strongly correlated (Fig. 2, *E*). For all significant genes, the Pearson correlation
+coefficient is
+`r format.pval(cors$sign, digits=2)`, 
+while for genes
+exclusively significant in G1 or G2 (genes "specific" to G1 or G2), it is
+`r format.pval(cors$g1, digits=2)` 
+and
+`r format.pval(cors$g2, digits=2)`, 
+respectively. Thus, genes which are significant in one, but not in the
+other comparison often have have similar log~2~ fold changes (e.g. Fig.
+2, *A*, *C* and *D*).
 
-Fig. BigReveal. **Genes which are significant in one comparison, but not
+**Fig. 2. Genes which are significant in one comparison, but not
 the other do not show a statistically significant interaction.** **A** -
 **D**, examples of genes which are DEG in one group, but are not
 significantly different in the other group. "Ctrl", healthy individuals; 
 "SC2", Sars-Cov-2 infected patients. Values above the plot indicate FDR (p-values
 corrected for multiple testing). **E**, correlation between log~2~ fold
 changes in G1 and G2. Color indicates genes which are are significant in
-one, but not significant in the other comparison. The overall Pearson correlation
+one, but not significant in the other comparison; red indicates genes significant in G1, 
+blue indicates genes significant in G2. The overall Pearson correlation
 coefficient between log~2~ fold changes is 
 `r with(res.merged, format.pval(cor(log2FoldChange.g1, log2FoldChange.g2), digits=2))`.
 
 
-```{r figBigReveal, fig.width=10, fig.height=5.5}
+```{r fig2, fig.width=10, fig.height=5.5, dpi=300,dev="png"}
 #id    <- gsub(" ", "_", toupper("response to interferon beta"))
 #gstitle    <- "GOBP_TOLL_LIKE_RECEPTOR_4_SIGNALING_PATHWAY"
 gstitle    <- "GOBP_INTERLEUKIN_7_MEDIATED_SIGNALING_PATHWAY"
@@ -423,14 +470,16 @@ pees <- map(sel, ~ {
 
 part1 <- plot_grid(plotlist=pees, labels="AUTO", ncol=2)
 
-tmp <- res.merged %>% mutate(specific= DEG.g1 != DEG.g2) %>%
+tmp <- res.merged %>% mutate(specific= 
+                             ifelse(DEG.g1 & !DEG.g2,
+                                    "G1", 
+                                    ifelse(!DEG.g1 & DEG.g2, "G2", "NS"))) %>%
                       mutate(tlr4=SYMBOL %in% gsgenes)
 
 part2 <- ggplot(tmp, aes(x=log2FoldChange.g1, 
                                 y=log2FoldChange.g2, 
-                                color=specific,
-                                symbol=tlr4)) + 
-         scale_color_manual(values=c("TRUE"="red", "FALSE"="#666666")) +
+                                color=specific)) + 
+         scale_color_manual(values=c(G1="red", G2="blue", NS="#666666")) +
          geom_point(alpha=.5) + xlab("G1") + ylab("G2") +
          geom_hline(yintercept=0, color="grey") +
          geom_vline(xintercept=0, color="grey") +
@@ -439,41 +488,52 @@ part2 <- ggplot(tmp, aes(x=log2FoldChange.g1,
 
 plot_grid(part1, part2, rel_widths=c(2, 2), labels=c("", "E"))
 ```
-Consequently, it is not possible to calculate gene set enrichment using a
+Consequently, it is not possible to calculate gene set enrichment for the
+interaction using a
 hypergeometric test, as there are no DEGs for the interaction contrast.
-Gene set enrichment using a second generation algorithm, relying on gene
-ordering rather than selecting a set of DEGs [@zyla2019gene], does not show
-any significant enrichment. 
+Gene set enrichment using a second generation algorithm (CERNO), relying on the
+ordering of genes according to their raw p-values from the interaction
+contrast rather than selecting a
+set of DEGs [@zyla2019gene], does not show any significant enrichment. 
 
-However, in the gene set enrichment analysis of the genes "specific" for a
-given comparison – i.e., genes which are significant in that comparison,
-but not significant in others – we have observed a number of terms
-associated with immune response. It is a crucial point of this manuscript
-to note that the spurious enrichments not only show significant p-values,
-but also that the terms or pathways which appear in them are relevant to
-the research hypothesis being tested. Below, we will show why these terms
-(rather than random terms which have no obvious relevance for an infectious
-disease) appear in the results.
+### Artifacts arise because of false negatives
 
-## Artifacts arise because of false negatives
+It is worth noting that in the gene set enrichment analysis of the genes
+"specific" for a given comparison – i.e., genes which are significant in
+that comparison, but not significant in others – we have observed a number
+of terms associated with immune response. It is a crucial point of this
+manuscript to note that the spurious enrichments not only show significant
+p-values, but also that the terms or pathways which appear in them are
+relevant to the research hypothesis being tested. Below, we will show why
+these terms (rather than random terms which have no obvious relevance for
+an infectious disease) appear in the results.
 
 To understand how gene set enrichment actually gives significant
 results in such randomly generated gene sets, despite absence of genes with
 significant interaction, it is first necessary to consider the definition
-of a differentially expressed gene in this context. Most often than not,
+of a differentially expressed gene in this context. More often than not,
 DEGs are defined by a threshold in p-value adjusted for multiple testing,
 possibly combined with a threshold in log~2~ fold change. The commonly used
-Benjamini-Hochberg procedure ensures that among genes for which the adjusted
-p~adj~ < 0.05 there are at most 5% false positives.
+Benjamini-Hochberg procedure [@benjamini1995controlling] ensures that among
+genes for which the adjusted p~adj~ < 0.05 there are at most 5% false
+positives.
 
 This way, we can exert control over the false positive rate (FPR, type I
 errors), keeping it at a relatively low level. However, we do not control
 the false negative rate (FNR, type II errors).  In a powerful statistical
-test (such as a t-test), the test power may achieve 80%; that is, the FNR
-is 20%. Clearly, false negatives (FNs) occur at much higher rates than
-false positives (FPs). In case of high throughput data sets, where the FPR is
-controlled by Bejnamini-Hochberg procedure or a similar technique, the FNR
-may be even as high as 80% [@white2019beyond]. 
+test (such as a t-test), the test power in a typical application will
+rarely achieve more than 80%. For example, even for large
+effects (Cohen's d > 0.8) and type I error rate of 0.05, a t-test only achieves
+80% power with at least 
+`r floor(pwr.t.test(power=.8, d=0.8)$n)`
+samples per group. For small effects (Cohen's d > 0.2), the required number
+of samples is at least
+`r floor(pwr.t.test(power=.8, d=0.2)$n)`
+per group.
+Even assuming a test power of 80%, the FNR is 20%. Clearly, false negatives (FNs) occur
+at much higher rates than false positives (FPs). In case of high throughput
+data sets, where the FPR is controlled by Bejnamini-Hochberg procedure or a
+similar technique, the FNR may be even as high as 80% [@white2019beyond]. 
 
 ```{r full_dataset}
 ds2_full <- DESeqDataSetFromMatrix(counts, colData=covar, design=~ disease )
@@ -491,10 +551,11 @@ g2_spec <- res.merged %>% filter(!DEG.g1 & DEG.g2) %>% pull(ENSEMBL)
 
 
 These FNs will occur
-at a much higher rate within the sets of "specific" DEGs defined by the
-non-overlaping areas of the VDs.
+at a much higher rate within the sets of DEGs defined by the
+non-overlaping areas of the VDs, that is DEGs considered to be "specific"
+for one group or other in a naive approach.
 To illustrate this phenomenon, we have analysed the full data set from which G1 and G2
-were drawn, comparing the 
+were drawn (Fig. 3), comparing the 
 `r sum(covar$disease == "no") `
 healthy controls to 
 `r sum(covar$disease == "SC2") `
@@ -511,7 +572,7 @@ genes significant in G2, but not in G1,
 (`r sprintf("%.0f%%", .n/length(g2_spec) * 100)`) 
 are significant in the full data set.
 Given that G1 and G2 were sampled from the total population, and since the
-FDR was set to `r padj_thr`, we can assume that between a third and a half of
+FDR was set to `r padj_thr`, we can assume that at least between a third and a half of
 the genes that appeared to be "specific" in the initial analysis were, in
 fact, false negatives in one of the comparisons.
 
@@ -524,12 +585,12 @@ due to the common factor (in this example, the COVID-19 disease), but
 which are not related to differences between the two groups. 
 
 
-**Fig. RelationshipDEGs**. Area-proportional Venn diagram showing overlaps in DEGs between
-G1, G2 and the full data set. The majority of genes which have been labeled
+**Fig. 3. Area-proportional Venn diagram showing overlaps in DEGs between
+G1, G2 and the full data set.** The majority of genes which have been labeled
 as DEGs in only one of the groups G1, G2 are DEGs when all data were
 analysed.
 
-```{r}
+```{r fig3,dpi=300,dev="png"}
 tmp <- merge(res.merged, res$full, by="ENSEMBL")
 tmp <- tmp[ , c("DEG.g1", "DEG.g2", "DEG") ]
 colnames(tmp) <- c("G1", "G2", "Full dataset")
@@ -537,7 +598,7 @@ plot(euler(tmp), quantities=list(type=c("counts", "percent")))
 ```
 
 
-# Discussion
+## Discussion
 
 ```{r lit_surves}
 links <- system2("grep", args=c("https", "literature_survey.md"), stdout=TRUE)
@@ -558,7 +619,7 @@ coupled the VDs with some form of gene set enrichment analysis on the
 set of supposedly "specific" DEGs.
 
 Drawing conclusions from comparing significance with lack thereof is a
-common statistical fallacy. Just as absence of evidence is not evidence of
+common statistical fallacy [@gelman2006difference]. Just as absence of evidence is not evidence of
 absence, the failure to reject the null hypothesis does not consitute the
 same level of evidence as rejecting it. However, when such an incorrect
 analysis is combined with downstream functional analysis – i.e., gene set
@@ -570,71 +631,91 @@ hypothesis involved cancer treatment. Such results may be hard to resist
 for an involved researcher, especially if the correct analysis of
 interactions does not show any significant differences.
 
-That is not to say that VDs are not a useful tool, also in the context of
-transcriptomics and gene set enrichments. For example, analysis of an
+That is not to say that VDs are not a useful tool, even in the context of
+transcriptomics and gene set enrichments, if used correctly. For example, analysis of an
 intersection of DEGs (i.e., by considering genes from the overlap in a VD)
 is not an incorrect procedure.  Genes in the overlapping part of a VD are
 significant in both (or all) comparisons, hence no comparison between
 significance and non-significance is made. 
 
+As an alternative to Venn diagrams two approaches can be considered.
+Firstly, as shown above, a test for interaction can reveal genes for which
+the impact of treatment significantly differ between the groups. As a mean
+of visualization, we recommend plotting the log~2~ fold changes in one
+comparison versus the log~2~ fold changes in the other comparison. In
+addition, a concordance / discordance analysis may provide additional
+insight in genes which are regulated either in the same direction or in the
+opposite directions in both groups [@domaszewska2017concordant].
+
 While the use of Venn diagrams in combination with the incorrect gene set
-enrichment analysis is common, it is by far not the only way of achieving
+enrichment analysis is common, it is not the only way of achieving
 artifactual and incorrect conclusions by means of comparing significant
 with non-significant results in transcriptomics and other high-throughput
 applications. Our literature survey showed that at least two other ways are
-widely spread. Firstly, the direct comparison of gene set enrichment
+common. Firstly, the direct comparison of gene set enrichment
 results: that is, drawing conclusions from the fact that a gene set
-enrichment result was significant in one comparison only. Second, while
-Venn diagrams are often used to illustrate the numbers of "specific" DEGs
-and so present a mean to find examples of this fallacy in scientific
-literature, researches often test for enrichment these "specific" genes
-without using the phrase "Venn diagram" or even clearly stating how the
-lists of "specific" genes were derived. In all these cases, the analysis
-boils down to comparing results significant in one, but not in another
-comparison.
+enrichment result was significant in one comparison only.
+Second, while Venn diagrams are often used to illustrate the numbers of
+"specific" DEGs and so present a mean to find examples of this fallacy in
+scientific literature, researches often test for enrichment these
+"specific" genes without using the phrase "Venn diagram" or even clearly
+stating how the lists of "specific" genes were derived. In all these cases,
+the analysis boils down to comparing results significant in one, but not in
+another comparison.
 
-# Methods
+The use of Venn diagrams to illustrate specific differences between
+comparisons should therefore be abandoned in favor of statistically correct
+approaches. Furthermore, gene set enrichment analysis must never be applied
+to sets of genes defined as significant in one comparison, but not the
+other.
 
-## Methods availability
+
+## Methods
+
+### Methods availability
 
 This document has been written as an Rmarkdown file, containing all
 statistical calculations required to replicate the findings and figures.
 The markdown file, along with additional files required to recreate this
 manuscript have been uploaded to [https://github.com/bihealth/manuscript_venn_diagrams](https://github.com/bihealth/manuscript_venn_diagrams).
 
-## Data
+### Data
 
 The expression data as a count matrix has been downloaded from GEO,
 accession GSE156063.
 
-## Statistical analyses
+### Statistical analyses
 
+Power calculation was done using the R package pwr, version
+`r packageVersion("pwr")`.
 For differential gene expression, the R package DESeq2, version
 `r packageVersion("DESeq2")`
 has been used. Gene set enrichments were done using either hypergeometric
-test (where stated) or CERNO using the package tmod [@zyla2019gene],
+test (where stated) or the CERNO test using the package tmod [@zyla2019gene],
 version
 `r packageVersion("tmod")`.
 GO terms have been sourced from the R package msigdbr, version
 `r packageVersion("msigdbr")`.
 
-## Literature survey
+### Literature survey
 
 An informal literature survey was performed using Google Scholar to
-estimate the frequency of the incorrect use of Venn Diagrams. We searched
-for articles mentioning the phrases "differential expression" and "venn
-diagram" in the Scientific Reports journal from 2020. The journal was
+estimate the frequency of the incorrect use of Venn diagrams. We searched
+for articles from 2020 mentioning the phrases "differential expression" and "venn
+diagram" in the Scientific Reports journal. The journal was
 selected because it represents a wide spectrum of research areas, the
 articles are available through an open access license and there is a large
 number of publications per year. For each of the papers identified, we
-tested whether (i) the authors used the VD to show differentially expressed
+checked whether (i) the authors used the VD to show differentially expressed
 transcripts significant in one comparison, but not another, (ii) the
 authors discussed "unique", "non-overlapping" or "specific" regions of the
 Venn diagram and (iii) whether this was coupled to gene set enrichment
 analysis is any form. Articles which (i) focused only on the intersections
-of the Venn diagrams (genes common to all conditions), (ii) which used the
+of the Venn diagrams (genes common to all conditions), or (ii) which used the
 Venn diagrams for a purpose other than to compare genes significant in one
 condition, but not significant in another condition or (iii) for which a
-clear-cut error could not be spotted were not considered incorrect.
+clear-cut error could not be indicated past any reasonable doubt were not
+considered incorrect.
 
+## Bibliography
 
