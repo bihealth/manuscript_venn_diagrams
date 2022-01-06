@@ -149,7 +149,7 @@ size, the more artifacts are observed. We have now included a section
 comparing the results for 10, 20 (our example) and 40 samples per
 group/treatment combination (thus, total sample sizes of 40, 80 and 160).
 The reason for this is, of course, that the more DEGs you observe, the more
-powerfull the hypergeometric test is.
+powerful the hypergeometric test is.
 
 For each sample size, we have run 100 replicates of the group sampling,
 replicated the whole procedure and gathered all test results. Results are
@@ -157,9 +157,7 @@ shown on the new Fig. 3, C and D.
 
 However, we also think that the core of the problem is the incorrect
 statistical procedure (selecting genes by comparing significance with lack
-thereof) which will not become more correct by increasing the sample size,
-even should we fail to observe any artifacts (which is not the case,
-artifacts appear even for abs(lfc) >= 3).**
+thereof) which will not become more correct by increasing the sample size.**
 
 XXX
 
@@ -190,8 +188,18 @@ Thus, the threshold serves to eliminate genes that do show statistically
 significant change (even if they are true positives), but which are not
 biologically relevant (because the effect size, for which log2 fold change
 is a proxy, is too small). The proportion of false positives is 5% even with no
-log2 FC treshold.  Nonetheless, we have compared the effect of the log2
-fold change threshold on the results.**
+log2 FC treshold.  
+
+Increasing the threshold can, of course, result in not observing any
+enrichments (see Fig. 3, A and B). Indeed, it does for some replicates.
+This is not surprising – without a sufficient number of DEGs, no
+enrichments can be calculated using a hypergeometric test. However, even
+though the effect of increasing log2 fold change may sometimes eliminate the
+symptoms, it does not cure the disease – the core problem of erroneous
+analysis of interactions remains.
+
+Nonetheless, we have compared the effect of the log2
+fold change threshold on the results (Fig. 3).**
 
 Higher values of log-fold change should also be used, and the results
 should be compared and discussed.
@@ -199,8 +207,11 @@ should be compared and discussed.
 **We have now included a section in the manuscript which shows the
 dependence of the artifacts on the log2 fold change thresholds used.
 For this, we have replicated the whole procedure of group randomization 100
-times, and repeated the analysis for different threshold values. Summary
-overview can be found in the new Fig. 3.**
+times. Summary overview can be found in the new Fig. 3. Bottom line: yes,
+for many replicates the artifacts disappear when the log2 fold change threshold is high –
+because the DEGs disappear. However, this is not generally so: even for LFC
+greater or equal 3 and total sample size of 160 the artifacts are still
+present in 78 out of 100 replicates.**
 
 
 The paper also needs to be edited to have a more scientific tone, improve long and complicated sentences, and correct the typos and grammatical errors.
