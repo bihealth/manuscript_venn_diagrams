@@ -633,18 +633,36 @@ plot_grid(p3, p4, nrow=1)
 ## "Specific" genes are likely FNs
 
 
-```{r fig3,dpi=300,dev="png"}
+.pull-left[
+
+```{r fig3,width=5,height=5,dpi=300,dev="png"}
 tmp <- merge(res.merged, res$full, by="ENSEMBL")
 tmp <- tmp[ , c("DEG.g1", "DEG.g2", "DEG") ]
 colnames(tmp) <- c("G1", "G2", "Full dataset")
 plot(euler(tmp), quantities=list(type=c("counts", "percent")))
 ```
 
+]
+
+.pull-right[
+
+In a larger data set, majority of the "specific" genes are significant.
+
+]
+
 ---
 
 ## Can we get rid of it in another way?
 
-```{r montecarlo,cache=TRUE,fig.width=7.5,fig.height=6.5}
+ * Increase the sample size to have a higher sensitivity (fewer FNs)
+
+ * Increase the LFC threshold to have fewer false positives 
+
+---
+
+## Can we get rid of it in another way?
+
+```{r montecarlo,cache=TRUE,fig.width=7.5,fig.height=5.5}
 ## note: given that the monte carlo simulation is quite time consuming, we
 ## have included the code for it in another file, `montecarlo.R`. If trying
 ## to replicate this manuscript, please execute that file first to generate
@@ -698,9 +716,31 @@ gsea_by_ss$ss <- factor(as.numeric(gsea_by_ss$ss) * 2, levels=c(10, 20, 40))
 g4 <- ggplot(gsea_by_ss, aes(x=ss, y=value)) + geom_boxplot() +
   ylab("Number of enriched gene sets") + xlab("Number of samples per group/treatment")
 
-plot_grid(g1, g2, g3, g4, labels = LETTERS[1:4])
+plot_grid(g3, g4, labels = LETTERS[1:2])
 ```
 
 ---
 
+```{r montecarlo2,cache=TRUE,fig.width=7.5,fig.height=5}
+plot_grid(g1, g2, labels = LETTERS[1:2])
+```
 
+---
+
+## Thank you!
+
+.pull-left[
+
+Source code for this presentation:
+[https://github.com/bihealth/manuscript_venn_diagrams](https://github.com/bihealth/manuscript_venn_diagrams)
+
+]
+
+.pull-right[
+
+```{r}
+library(qrcode)
+plot(qr_code("github.com/bihealth/manuscript_venn_diagrams"))
+```
+
+]

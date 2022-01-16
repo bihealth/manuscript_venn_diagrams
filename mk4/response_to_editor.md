@@ -10,16 +10,8 @@ A statistically correct approach involves testing for interaction."
 To start with, no one uses "Venn diagrams to find genes which are thought to be
 specific for a certain comparison". It is just a visualization tool. 
 
-**We do agree in principle. However, the term "venn diagram analysis" (and
-related formulations) is firmly (even though rather unfortunately)
-established in the field of differential expression and many authors are
-using it essentially as a shorthand for stating that the supposedly
-treatment specific genes are found by comparing which genes are significant
-in one, but not the other comparison. We have now explained this in more
-detail in the Introduction as follows:**
-
-XXX
-
+**We do agree ; we have stated that ourselves in the
+Discussion. We have now reformulated the Abstract and Introduction.**
 
 The flaw
 is not in the Venn diagram but in how one could interpret it. Also, applying
@@ -27,17 +19,18 @@ gene set enrichment analysis to such subsets could be done even without the use
 of Venn diagrams. 
 
 **We fully agree; we have already addressed this issue in the
-"Discussion".**
+"Discussion". However...**
 
 The title and abstract are misleading and more journalistic
 than scientific.  An analogous example to how the authors presented the paper
 would be to condemn the use of a knife for murders. 
 
 **We understand that point. However, we do observe a substantial fraction of
-papers using Venn diagrams misinterpreting the results. The given analogy
-would only work if every fourth use of a knife resulted in a homicide. This
-point has already been addressed in the Discussion. Nonetheless we have now
-removed references to Venn diagrams in the title and in the abstract.**
+papers using Venn diagrams misinterpreting the results. To continue on the
+metaphor, the given analogy would only work if every fourth use of a knife
+resulted in a homicide. This point has already been addressed in the
+Discussion. Nonetheless we have now removed references to Venn diagrams in
+the title and in the abstract.**
 
 This style is misleading
 and not acceptable for a scientific paper. The title and abstract should be
@@ -57,7 +50,8 @@ in our view – have incorrectly interpreted Venn diagrams. For example, the
 file `literature_survey_sci_immunol.md` includes six (out of 14 analysed)
 links to papers in Science Immunology which incorrectly interpreted Venn
 diagrams. The file `literature_survey_scirep.md` contains 73 links to
-papers from Scientific Reports (out of 238 reviewed).**
+papers from Scientific Reports (out of 238 reviewed). We now mention that
+explicitely in "Methods".**
 
 The literature review results with incorrect use cases should be provided as
 supplementary materials to support the claims made in the paper. 
@@ -95,7 +89,10 @@ smaller sample sizes for each group.
 **We agree, but the total number of samples in the analysis is still 80,
 with 40 samples per group and 20 per group/treatment combination. This is
 not an unusually small sample size for this type of transcriptomic
-analysis (see below for more on the chosen sample size). Also, the design of our in
+analysis (see below for more on the chosen sample size). In fact, in your
+2019 paper on the influence of sample size on gene set enrichments that was
+the largest group size you have used.
+Also, the design of our in
 silico experiment *requires* splitting the data set into two randomly selected groups,
 because that is the whole idea of the paper: take a situation in which 
 there should not be any significant enrichments (because there are no
@@ -122,15 +119,19 @@ would claim otherwise.**
 expression of genes might not have the power to reject the null hypothesis (no
 differential expression), resulting in introducing false negatives. 
 
-**We fully agree that FNs are the core of the problem! However, we know
-from other studies (and basic statistics) that even in most favorable
-circumstances the FNR will likely be above 20%; and that in case of transcriptomic
-studies, the FNR may be much larger (please see the relevant fragment already
-included in the paper). In other words, it does not matter whether one
-looks at 80 samples or 193 samples: FNs are bound to occur. That is the
-reason – we claim – for the fact that the gene set enrichments found in
-this manner are related to the studied problem. However, we have addressed
-this isssue by testing different sample sizes (see below).**
+**We fully agree that FNs are the core of the problem! In fact, we have
+chosen the FDR of 0.05 to minimize the number of false negatives (since a
+more conservative threshold results in higher false negative rate).**
+
+**However, we know from other studies (and basic statistics) that even in
+most favorable circumstances the FNR will likely be above 20%; and that in
+case of transcriptomic studies, the FNR may be much larger (please see the
+relevant fragment already included in the paper). In other words, it does
+not matter whether one looks at 80 samples or 193 samples: FNs are bound to
+occur. That is the reason – we claim – for the fact that the gene set
+enrichments found in this manner are related to the studied problem.
+However, we have addressed this isssue by testing different sample sizes
+(see below).**
 
 Therefore,
 the design of the experiment is biased in favour of the "desired" conclusion.
@@ -140,22 +141,22 @@ well above the median used by others precisely to avoid this allegation. We
 have now included a relevant reference (Baccarella et al.) which includes a
 literature survey on RNA sample size in real world data. In there you will
 see that half of the studies used sample sizes sizes of 6 or less per
-group.
+group.**
 
-Nonetheless, we think that showing how the artifacts depend on sample size
+**Nonetheless, we think that showing how the artifacts depend on sample size
 is, in itself, interesting, not least because it shows that sample size has
 a direct effect on the number of observed artifacts: the larger the sample
 size, the more artifacts are observed. We have now included a section
 comparing the results for 10, 20 (our example) and 40 samples per
 group/treatment combination (thus, total sample sizes of 40, 80 and 160).
 The reason for this is, of course, that the more DEGs you observe, the more
-powerful the hypergeometric test is.
+powerful the hypergeometric test is.**
 
-For each sample size, we have run 100 replicates of the group sampling,
+**For each sample size, we have run 100 replicates of the group sampling,
 replicated the whole procedure and gathered all test results. Results are
-shown on the new Fig. 3, C and D.
+shown on the new Fig. 4, C and D.**
 
-However, we also think that the core of the problem is the incorrect
+**However, we also think that the core of the problem is the incorrect
 statistical procedure (selecting genes by comparing significance with lack
 thereof) which will not become more correct by increasing the sample size.**
 
@@ -174,32 +175,33 @@ may still not be significant and vice versa, true positives may have small
 log2 fold changes. Therefore you cannot predict what will be the precise
 effect of raising the LFC threshold on FDR except in very broad terms,
 whereas setting the FDR threshold gives you clear information about the
-expected proportion of false positives in your results.
+expected proportion of false positives in your results.**
 
-This is analogous to using an effect size filter (say, Cohen's d) on
+**This is analogous to using an effect size filter (say, Cohen's d) on
 results of a t-test. The p-value from the t-test controls the type I error
 rate, but a statistically significant difference does not necessarily
 indicate a biologically meaningfull effect. For this, we turn to the effect
 size (see for example Sullivan, Gail M., and Richard Feinn. "Using effect
 size—or why the P value is not enough." Journal of graduate medical
-education 4.3 (2012): 279-282.).
+education 4.3 (2012): 279-282.).**
 
-Thus, the threshold serves to eliminate genes that do show statistically
-significant change (even if they are true positives), but which are not
+**Thus, the threshold serves to eliminate genes that do show statistically
+significant change (that is, they are true positives), but which are not
 biologically relevant (because the effect size, for which log2 fold change
 is a proxy, is too small). The proportion of false positives is 5% even with no
-log2 FC treshold.  
+log2 FC treshold.**
 
-Increasing the threshold can, of course, result in not observing any
-enrichments (see Fig. 3, A and B). Indeed, it does for some replicates.
+**Increasing the threshold can, of course, result in not observing any
+enrichments (see Fig. 4, A and B). Indeed, it does for some replicates.
 This is not surprising – without a sufficient number of DEGs, no
 enrichments can be calculated using a hypergeometric test. However, even
 though the effect of increasing log2 fold change may sometimes eliminate the
 symptoms, it does not cure the disease – the core problem of erroneous
-analysis of interactions remains.
+analysis of interactions remains, and many replicates have artifactual
+enrichments even at high log fold change thresholds.**
 
-Nonetheless, we have compared the effect of the log2
-fold change threshold on the results (Fig. 3).**
+**Nonetheless, we have compared the effect of the log2
+fold change threshold on the results (Fig. 4).**
 
 Higher values of log-fold change should also be used, and the results
 should be compared and discussed.
@@ -207,7 +209,7 @@ should be compared and discussed.
 **We have now included a section in the manuscript which shows the
 dependence of the artifacts on the log2 fold change thresholds used.
 For this, we have replicated the whole procedure of group randomization 100
-times. Summary overview can be found in the new Fig. 3. Bottom line: yes,
+times. Summary overview can be found in the new Fig. 4. Bottom line: yes,
 for many replicates the artifacts disappear when the log2 fold change threshold is high –
 because the DEGs disappear. However, this is not generally so: even for LFC
 greater or equal 3 and total sample size of 160 the artifacts are still

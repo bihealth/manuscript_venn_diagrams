@@ -2,9 +2,9 @@
 title: ""
 author: "January Weiner^1,†^, Benedikt Obermayer^1^ and Dieter Beule^1^"
 date: "`r Sys.Date()`"
-output:
-  html_document
 outputoff:
+  html_document
+output:
   word_document:
     reference_docx: templates/template.docx
 outputoff2: 
@@ -16,25 +16,52 @@ link-citations: true
 XXcsl: templates/nature-medicine.csl
 ---
 
+## Titles
+
+???
+
+
 ^1^ Berlin Institute of Health at Charité – Universitätsmedizin Berlin, Core Unit Bioinformatics, Charitéplatz 1, 10117 Berlin, Germany
 
 ^†^ To whom the correspondence should be addressed
 
 ## Abstract
 
-Venn diagrams are frequently used to illustrate the results of
-differential expression analysis and further
-downstream functional analysis. Here we show that both, the use
-of Venn diagrams to find genes which are thought to be specific for a
-certain comparison, as well as gene set enrichment analysis applied to such
-subsets is a fallacy.  A statistically correct approach involves testing for interaction.
-Moreover, since genes which show a significant change in one condition but
-not in another are likely to be false negatives in the latter case, these
-genes considered to be specific for one condition are likely characteristic
-for both of the compared groups, and enriched in functions related to the
-research hypothesis. Thus, the combination of incorrect statistical
-analysis and gene set enrichment analysis may result in particularly
-misleading artifacts.
+Version 1: In statistics, comparing the effect of a treatment in two different
+conditions requires the use of an appropriate statistical test to assert
+the significance of interaction between the treatment and the condition.
+However, a common procedure is to define genes specifically regulated in
+one, but not the other condition by selecting genes which show a
+statistically significant difference in one condition only. Here we show
+that not only is this procedure incorrect, but moreover, when combined with
+gene set enrichment analyses, it leads to statistically significant, but
+incorrect results. These gene set enrichments are the effect of false
+negatives and reflect only the differences in gene expression due to
+treatment and not due to the difference between conditions. Thus, the
+combination of incorrect statistical analysis and gene set enrichment
+analysis may result in particularly misleading artifacts.
+
+Version 2: A common application of differential expression analysis is to
+ask which genes are differentially expressed upon treatment in one
+condition only. One of the approaches is to define genes specific to a
+condition by testing for significant difference in expression separately
+in the two conditions, and then selecting genes which show statistical
+significance in one condition only. This approach may then be combined with
+a gene set enrichment analysis to find pathways and gene sets
+characteristic for this condition only.
+
+Here we show that this procedure is incorrect. Instead, the interaction
+between treatment and condition should be tested. Moreover, we show that
+gene set enrichment analysis applied to incorrectly defined genes specific
+to one condition only may result in misleading artifacts. Genes which show
+significant difference upon treatment in one, but not the other condition
+are enriched in gene sets related to the treatment, but not to the
+condition. Thus, while the results are apparently related to the treatment,
+they do not reflect differences in expression specific to a given
+condition.
+
+Version 3: 
+
 
 ```{r,echo=FALSE}
 ## Set default options for the knitr RMD processing
@@ -66,70 +93,66 @@ source("functions.R")
 ```{r setup}
 padj_thr <- 0.05
 lfc_thr  <- 1
-n_stratum <- 10 # 2 strata (male and female) per condition 
+n_stratum <- 10 # 2 strata (male and female) per condition/group
+                # total number of samples n_stratum * 2 * 2 * 2
 lfc_thresholds <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
 ```
 
 
 
-## Introduction: Venn diagrams are a showcase of erroneous interpretation of interactions
+## Introduction
 
-Venn diagrams (VDs) are commonly used to visualize high throughput data
-such as transcriptomic profiles. Frequently, a Venn diagram serves the
-purpose of comparing the results from two experiments or two comparisons.
-For example, a VD may illustrate up- or down-regulated genes in two strains
-of mice upon infection, showing which genes are regulated in both strains,
-and which are regulated only in one of them.  The VD serves as a basis for
-the statement that the regulation of certain genes is "specific" for one
-strain or another. A gene is, in this context, considered "specific" or
-"unique" for a given comparison when it shows a statistically significant
-difference in that comparison only.  We argue that not only is this
-inference incorrect, but it may also lead to misleading – although
-appealing – artifacts when combined with downstream analyses.
+Transcriptomic analyses commonly include more than one factor. Often, the
+question asked is whether there is a difference between conditions (first
+factor) with respect to reaction to a particular treatment (second
+condition). For example, we may ask whether there are differentially
+expressed genes (DEGs) which are specific to a particular group of
+patients, such as interferon response elicited by a virus in one group, but
+silenced in the other group of patients. In other words, we ask whether the
+difference between control (healthy subjects) and treatment (infected
+patients) is different between two groups of individuals. This "difference
+of differences" is known in statistics as an interaction
+[@blalock1965theory]. To find out whether it is statistically significant,
+an appriopriate statistical test for interaction should be employed.
 
-Consider a gene for which the expression has been analysed in four groups:
-two different mouse strains (wildtype, WT and knockout, KO) and two different experimental conditions
-(naive versus infected). We find that the gene expression significantly
-differs between infected and naive KO animals, but that there is no
-significant difference in the WT strain. Such a gene may be incorrectly
-considered as "specific" to KO, and will be accordingly entered in a Venn
-diagram.
+However, another approach is widely spread [@nieuwenhuis2011erroneous].
+Instead of testing the interaction, one tests the effect of the treatment
+separately in both groups. Next, a difference between conditions is inferred if the difference
+is significant in one comparison, but not significant in the other. This
+approach is not correct from statistical point of view, as "the difference
+between significant and not significant is not itself statistically
+significant" [@gelman2006difference]. For example, the p-value in the first
+comparison may be 0.009, and in the other comparison 0.011, thus at an
+alpha level of 0.01 the difference will be statistically significant in the
+first, but not significant in the other comparison.
 
-However, this is a common fallacy [@nieuwenhuis2011erroneous], since lack
-of statistical significance is not the same as testing for lack of
-difference. In other words, the fact that we failed to detect a significant
-difference in the WT does not mean that the difference is absent and
-itself significantly different from the difference in the KO. This "difference of
-differences" is known is statistics as interaction [@blalock1965theory].
-Here, it is the interaction between strain and treatment.  In fact, the
-obtained p-values might be just over the assumed p-value threshold in one, but just
-under it in the other strain (e.g. 0.009 vs 0.011), with the difference in
-both strains being essentially the same. The correct analysis is to test
-the significance of interaction using an ANOVA model. Notably, in 2011
-Nieuwenhuis et al. found that in over 150 papers in top neuroscience
-journals where the authors could make this particular statistical error,
-half of them did. 
+In transcriptomics, the statistical tests are performed for thousands of
+genes. As in the general case, the correct inference of differences between
+the conditions is by testing the significance of interaction. However, in
+another approach the differences between treatment and control are tested
+in the two conditions separately, and the results are then compared. This
+can be visualized using a Venn diagram (VD, Fig. 1) showing the overall
+number of DEGs significant in both comparisons (the intersection in the VD)
+or significant in only one comparison (the remaining two fields on a VD).
+The genes which are significant in only one comparison may then be
+incorrectly defined as specific to the corresponding condition. Following
+this, gene set enrichment analysis may be applied to these genes in an
+attempt to test which pathways are specific to one, but not the other
+condition.
 
-Using VDs to show genes "specific" for a condition amounts to
-counting the times a comparison for a gene was statistically significant in
-one condition, but not significant in another.
-More disturbingly, VDs are a visual illustration of a procedure
-that exacerbates this problem by applying a downstream analysis to
-supposedly specific sets of genes. Several cells in a Venn diagram contain
-numbers corresponding to features (such as genes), for which there was a significant test result in
-one, but not in another comparison. The sets of genes in a Venn diagram cell may
-then be subsequently analysed to test whether they share a particular
-characteristics.  For example, gene set enrichment analysis may be used to
-interpret the biological function of genes that are considered "specific" to one
-condition. It turns out that due to the
-fallacious nature of this procedure, it is likely to produce results that
-appear to make sense in the given biological context.
-
-In this paper, we illustrate this rather simple statistical statement with
-a real world data set, demonstrating how choosing this sort of approach
-results in apparently sound gene set enrichment results which are, in fact,
-artifacts. Next, we dissect the underlying mechanism of how these artifacts
-are generated.  Finally, we discuss alternative approaches.
+In this paper, we show that under reasonable assumptions this approach may
+result in apparent enrichments even if there are no real differences
+between the groups. To this end, we have randomly split a cohort into two
+groups, compared the treatment (viral infection) with controls in each of
+the groups separately and then applied gene set enrichment to the sets of
+genes significantly different in one, but not the other group.
+Moreover, we show that the resulting gene set enrichments correspond to the
+differential expression between treatment and control. Thus, the enriched
+terms are relevant to the studied project, yet while they do reflect real
+processes linked to treatment, they are not demonstrative of differences
+between the study groups. Finally, we use literature search to show that
+this incorrect approach to study group-specific treatment effects is not
+uncommon.
 
 ## Results
 
@@ -280,8 +303,7 @@ res.merged <- merge(res$g1, res$g2, by=c("ENSEMBL", "SYMBOL", "ENTREZID", "GENEN
 
 First, we have performed differential gene expression analysis for each of
 the groups G1 and G2 separately using standard bioinformatic tools. For each comparison, we defined
-genes with significantly different gene expression 
-(differentially expressed genes, DEGs) 
+DEGs
 by using an false discovery rate (FDR) threshold of 
 `r padj_thr`
 and absolute log~2~ fold change (LFC) threshold of
@@ -295,7 +317,7 @@ DEGs were common for G1 and G2,
 `r sum(res.merged$DEG.g1 & !res.merged$DEG.g2)` 
 DEGs were significant in G1 only ("specific" for G1), and 
 `r sum(!res.merged$DEG.g1 & res.merged$DEG.g2)` 
-were significant in G2 only ("specific" for G2; see Fig. 1, panel *A*).
+were significant in G2 only (see Fig. 1, panel *A*).
 A naive interpretation of these results implies that there is a substantial
 difference between these two groups of individuals, as evidenced by a small
 overlap in commonly regulated genes, while the majority of DEGs is
@@ -343,7 +365,8 @@ Gene sets with more than `r max_mod_size` or
 fewer than `r min_mod_size` genes were removed.
 For each group, we have
 selected only genes which are DEGs in that group, but not the other,
-mimicking a naive approach for finding "specifically" regulated pathways.
+mimicking a naive approach for finding pathways regulated in one patient
+group only.
 Here, a similar picture
 emerged. Just
 `r nrow(gsea_res$g1)` gene sets were significantly enriched in G1, and
@@ -529,108 +552,6 @@ ordering of genes according to their raw p-values from the interaction
 contrast rather than selecting a
 set of DEGs [@zyla2019gene], does not show any significant enrichment. 
 
-### Influence of sample size and cut-off thresholds on number of artifacts
-
-In the example above, the groups have been randomly sampled from a larger
-data set only once. Arguably, the observations might differ if the groups
-were to be resampled. To investigate whether the sampling had an impact on
-the artifacts, we have repeated the above procedure for 100 replicates,
-each containing a different set of samples randomly assigned to the two
-groups.  Furthermore, we tested whether the selection of the log~2~ fold
-change threshold or different sample size might have an impact on the
-extent of the arising artifacts. To this end, we have tested `r
-length(lfc_thresholds)` different threshold values for the log~2~ fold
-changes and three sample sizes: 20, 40 or 80 samples per group
-(corresponding to 10, 20 or 40 samples per group/treatment combination). 
-
-**Fig. 3. Influence of log~2~ fold change treshold (A, C) and the sample
-size (B, D) on the number of genes significant in one, but not in the other
-group (A, B) and the number of significant gene sets found in one group, but
-not the other (C, D).**  Top row shows the influence of log~2~ fold change
-threshold for sample size of 40 per group (20 per group/treatment
-combination), bottom row shows the influence of sample size for a log~2~
-fold change threshold set to `r lfc_thr`.
-
-```{r montecarlo,cache=TRUE,fig.width=7.5,fig.height=6.5}
-## note: given that the monte carlo simulation is quite time consuming, we
-## have included the code for it in another file, `montecarlo.R`. If trying
-## to replicate this manuscript, please execute that file first to generate
-## the necessary replicates.
-
-outdir <- "montecarlo"
-
-merged_res <- readRDS(file.path(outdir, "merged_res.rds"))
-
-lfc_thresholds <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
-
-by_lfc_thr <- map_dfc(lfc_thresholds, ~ 
-                      get_specific_num(merged_res[["10"]], lfc_thr=.x,
-                                       padj_thr=padj_thr))
-colnames(by_lfc_thr) <- lfc_thresholds
-by_lfc_thr <- by_lfc_thr %>% pivot_longer(everything(), names_to = "lfc")
-
-g1 <- ggplot(by_lfc_thr, aes(x=lfc, y=value)) + geom_boxplot() +
-  ylab("Number of DEGs") + xlab("log2 fold change threshold")
-
-gsea_files <- list.files(path=outdir, pattern="gsea_.*rds", full.names=TRUE)
-gsea_by_lfc_thr_files <- gsea_files[ grepl("gsea_res_10", gsea_files) ]
-names(gsea_by_lfc_thr_files) <- gsub("montecarlo/gsea_res_10_([0-9.]*)\\.rds", "\\1",
-                                     gsea_by_lfc_thr_files)
-gsea_by_lfc_thr_files <- gsea_by_lfc_thr_files[ order(as.numeric(names(gsea_by_lfc_thr_files))) ]
-gsea_by_lfc_thr <- map_dfc(gsea_by_lfc_thr_files, gsea_specific_num)
-gsea_by_lfc_thr <- gsea_by_lfc_thr %>% pivot_longer(everything(), names_to = "lfc")
-
-g2 <- ggplot(gsea_by_lfc_thr, aes(x=lfc, y=value)) + geom_boxplot() +
-  ylab("Number of enriched gene sets") + xlab("log2 fold change threshold")
-
-by_ssize <- map_dfc(c("5", "10", "20"), 
-                    ~ get_specific_num(merged_res[[.x]], lfc_thr=1,
-                                       padj_thr=padj_thr))
-colnames(by_ssize) <- c(10, 20, 40)
-by_ssize <- by_ssize %>% pivot_longer(everything(), names_to = "ss")
-
-g3 <- ggplot(by_ssize, aes(x=ss, y=value)) + geom_boxplot() +
-  ylab("Number of DEGs") + xlab("Number of samples per group/treatment")
-
-gsea_by_ss_files <- gsea_files[ grepl("gsea_res_[0-9]*_1\\.rds", gsea_files) ]
-names(gsea_by_ss_files) <- gsub("montecarlo/gsea_res_([0-9]*)_.*\\.rds", "\\1",
-                                     gsea_by_ss_files)
-gsea_by_ss_files <- gsea_by_ss_files[ order(as.numeric(names(gsea_by_ss_files))) ]
-gsea_by_ss <- imap(gsea_by_ss_files, ~ {
-                     data.frame(ss=.y, value= gsea_specific_num(.x))
-                                     })
-gsea_by_ss <- Reduce(rbind, gsea_by_ss)
-gsea_by_ss$ss <- factor(as.numeric(gsea_by_ss$ss) * 2, levels=c(10, 20, 40))
-
-g4 <- ggplot(gsea_by_ss, aes(x=ss, y=value)) + geom_boxplot() +
-  ylab("Number of enriched gene sets") + xlab("Number of samples per group/treatment")
-
-plot_grid(g1, g2, g3, g4, labels = LETTERS[1:4])
-```
-
-Setting a higher log~2~ fold change threshold reduces the number of
-DEGs and of observed artifacts (Fig. 3, A and B). However, even for log~2~
-threshold of 3 (DEGs defined by 8-fold change and FDR < `r pval_thr`) the
-number of replicates in which artifacts can be observed is 
-`r sum(gsea_by_lfc_thr %>% filter(lfc == 3) %>% pull(value) > 0)`
-(out of 100),
-and in at least 
-`r sum(gsea_by_lfc_thr %>% filter(lfc == 3) %>% pull(value) > 0)`
-replicates, 5 or more gene sets were significantly
-enriched. Thus, setting a more conservative threshold cannot protect from
-the arising artifacts.
-
-Contrary to our expectations, the number of artifacts rose with sample size
-(Fig. 3, C and D). For total sample size of 160 (40 samples per
-group/treatment combination) the number of artifacts was almost 
-`r round(
-  mean(gsea_by_ss %>% filter(ss == 40) %>% pull(value)) /
-  mean(gsea_by_ss %>% filter(ss == 20) %>% pull(value)))
-`
-times higher than for total sample size of 80. 
-
-
-
 
 
 
@@ -693,7 +614,7 @@ at a much higher rate within the sets of DEGs defined by the
 non-overlaping areas of the VDs, that is DEGs considered to be "specific"
 for one group or other in a naive approach.
 To illustrate this phenomenon, we have analysed the full data set from which G1 and G2
-were drawn (Fig. 4), comparing the 
+were drawn (Fig. 3), comparing the 
 `r sum(covar$disease == "no") `
 healthy controls to 
 `r sum(covar$disease == "SC2") `
@@ -723,7 +644,7 @@ due to the common factor (in this example, the COVID-19 disease), but
 which are not related to differences between the two groups. 
 
 
-**Fig. 4. Area-proportional Venn diagram showing overlaps in DEGs between
+**Fig. 3. Area-proportional Venn diagram showing overlaps in DEGs between
 G1, G2 and the full data set.** The majority of genes which have been labeled
 as DEGs in only one of the groups G1, G2 are DEGs when all data were
 analysed.
@@ -735,8 +656,150 @@ colnames(tmp) <- c("G1", "G2", "Full dataset")
 plot(euler(tmp), quantities=list(type=c("counts", "percent")))
 ```
 
+### Influence of sample size and cut-off thresholds on number of artifacts
 
-## Discussion
+In the example above, the groups have been randomly sampled from a larger
+data set only once. Arguably, the observations might differ if the groups
+were to be resampled. Furthermore, we have chosen a group size of 
+`r n_stratum * 4` (`r n_stratum * 2` per group/treatment combination). 
+Larger sample sizes are known to increase robustness of gene set enrichment
+analysis, and group size of 20 has been shown to be relatively robust [@maleki2019size].
+However, a smaller or larger group size might change the proportion of FNs in the
+results and thus influence the results of gene set enrichment. Finally,
+we have used a log~2~ fold change threshold of `r lfc_thr`, because raising
+it would increase the fraction of FNs. However, selecting more biologically
+only relevant genes which a substantially higher effect size may influence
+the observed enrichments. On the other hand, raising the log~2~ fold change
+threshold or lowering the sample size may lead to a smaller number of
+defined DEGs, thus making the hypergeometric test less powerful and lead to
+fewer gene set enrichment.
+
+To investigate whether the sampling had an impact on
+the artifacts, we have repeated the above procedure for 100 replicates,
+each containing a different set of samples randomly assigned to the two
+groups.  Furthermore, we tested whether the selection of the log~2~ fold
+change threshold or different sample size might have an impact on the
+extent of the arising artifacts. To this end, we have tested 
+`r length(lfc_thresholds)` 
+different threshold values for the log~2~ fold
+changes and three sample sizes: 20, 40 or 80 samples per group
+(corresponding to 10, 20 or 40 samples per group/treatment combination). 
+
+**Fig. 4. Influence of log~2~ fold change treshold (A, C) and the sample
+size (B, D) on the number of genes significant in one, but not in the other
+group (A, B) and the number of significant gene sets found in one group, but
+not the other (C, D).**  Top row shows the influence of log~2~ fold change
+threshold for sample size of 40 per group (20 per group/treatment
+combination), bottom row shows the influence of sample size for a log~2~
+fold change threshold set to `r lfc_thr`.
+
+```{r montecarlo,cache=TRUE,fig.width=7.5,fig.height=6.5}
+## note: given that the monte carlo simulation is quite time consuming, we
+## have included the code for it in another file, `montecarlo.R`. If trying
+## to replicate this manuscript, please execute that file first to generate
+## the necessary replicates.
+
+outdir <- "montecarlo"
+
+merged_res <- readRDS(file.path(outdir, "merged_res.rds"))
+
+lfc_thresholds <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
+
+fdr_thresholds <- c(.8, .7, .6, .5, .4, .3, .2, .1, .05, .01, .001, .0001, 0.00001, 1e-6)
+by_fdr <- map_dfc(fdr_thresholds, ~ {
+                      a <- get_specific_num(merged_res[["10"]], lfc_thr=0, padj_thr=.x)
+                      b <- get_total_num(merged_res[["10"]], lfc_thr=0, padj_thr=.x)
+                      (b - a)/b }
+)
+colnames(by_fdr) <- fdr_thresholds
+by_fdr <- by_fdr %>% pivot_longer(everything(), names_to = "lfc")
+by_fdr$lfc <- factor(by_fdr$lfc, levels=fdr_thresholds)
+g0 <- ggplot(by_fdr, aes(x=lfc, y=value)) + geom_violin() +
+  ylab("Number of DEGs") + xlab("FDR threshold")
+
+by_lfc_thr <- map_dfc(lfc_thresholds, ~ 
+                      get_specific_num(merged_res[["10"]], lfc_thr=.x,
+                                       padj_thr=padj_thr))
+colnames(by_lfc_thr) <- lfc_thresholds
+by_lfc_thr <- by_lfc_thr %>% pivot_longer(everything(), names_to = "lfc")
+
+g1 <- ggplot(by_lfc_thr, aes(x=lfc, y=value)) + geom_boxplot() +
+  ylab("Number of DEGs") + xlab("log2 fold change threshold")
+
+gsea_files <- list.files(path=outdir, pattern="gsea_.*rds", full.names=TRUE)
+gsea_by_lfc_thr_files <- gsea_files[ grepl("gsea_res_10", gsea_files) ]
+names(gsea_by_lfc_thr_files) <- gsub("montecarlo/gsea_res_10_([0-9.]*)\\.rds", "\\1",
+                                     gsea_by_lfc_thr_files)
+gsea_by_lfc_thr_files <- gsea_by_lfc_thr_files[ order(as.numeric(names(gsea_by_lfc_thr_files))) ]
+gsea_by_lfc_thr <- map_dfc(gsea_by_lfc_thr_files, gsea_specific_num)
+gsea_by_lfc_thr <- gsea_by_lfc_thr %>% pivot_longer(everything(), names_to = "lfc")
+
+g2 <- ggplot(gsea_by_lfc_thr, aes(x=lfc, y=value)) + geom_boxplot() +
+  ylab("Number of enriched gene sets") + xlab("log2 fold change threshold")
+
+
+by_ssize <- map_dfc(c("5", "10", "20"), 
+                    ~ get_specific_num(merged_res[[.x]], lfc_thr=1,
+                                       padj_thr=padj_thr))
+colnames(by_ssize) <- c(10, 20, 40)
+by_ssize <- by_ssize %>% pivot_longer(everything(), names_to = "ss")
+
+g3 <- ggplot(by_ssize, aes(x=ss, y=value)) + geom_boxplot() +
+  ylab("Number of DEGs") + xlab("Number of samples per group/treatment")
+
+gsea_by_ss_files <- gsea_files[ grepl("gsea_res_[0-9]*_1\\.rds", gsea_files) ]
+names(gsea_by_ss_files) <- gsub("montecarlo/gsea_res_([0-9]*)_.*\\.rds", "\\1",
+                                     gsea_by_ss_files)
+gsea_by_ss_files <- gsea_by_ss_files[ order(as.numeric(names(gsea_by_ss_files))) ]
+gsea_by_ss <- imap(gsea_by_ss_files, ~ {
+                     data.frame(ss=.y, value= gsea_specific_num(.x))
+                                     })
+gsea_by_ss <- Reduce(rbind, gsea_by_ss)
+gsea_by_ss$ss <- factor(as.numeric(gsea_by_ss$ss) * 2, levels=c(10, 20, 40))
+
+g4 <- ggplot(gsea_by_ss, aes(x=ss, y=value)) + geom_boxplot() +
+  ylab("Number of enriched gene sets") + xlab("Number of samples per group/treatment")
+
+plot_grid(g1, g2, g3, g4, labels = LETTERS[1:4])
+```
+
+Setting a higher log~2~ fold change threshold reduces the number of
+DEGs as well as of the observed artifactual gene set enrichments 
+(Fig. 4, A and B). However, even for log~2~
+threshold of 3 (DEGs defined by 8-fold change and FDR < `r padj_thr`) the
+number of replicates in which artifacts can be observed is 
+`r sum(gsea_by_lfc_thr %>% filter(lfc == 3) %>% pull(value) > 0)`
+(out of 100),
+and in at least 
+`r sum(gsea_by_lfc_thr %>% filter(lfc == 3) %>% pull(value) >= 5)`
+replicates, 5 or more gene sets were significantly
+enriched. Thus, setting a more conservative threshold while retaining the
+incorrect procedure cannot fully protect from the arising artifacts.
+The number of artifacts rose with sample size
+(Fig. 4, C and D). For total sample size of 160 (40 samples per
+group/treatment combination) the number of artifacts was almost 
+`r round(
+  mean(gsea_by_ss %>% filter(ss == 40) %>% pull(value)) /
+  mean(gsea_by_ss %>% filter(ss == 20) %>% pull(value)))
+`
+times higher than for total sample size of 80. 
+
+### Incorrect analysis of interactions is common in transcriptomics
+
+@nieuwenhuis2011erroneous observed incorrect analyses of interactions in
+about half of the analysed papers from top neuroscience journals where the
+authors considered an interaction. We wanted to know if this problem is
+common in transcriptomics, too. To this end, we have searched three
+journals – from broad to specialized – for the occurence of the terms
+"differential expression" with "venn diagrams" (Tab. 2). Next, we analysed
+the selected papers from year 2020 (and years 2015-2020 in one case) to
+decide whether the VD was described or referred to as showing genes
+"specific" or "unique" to a particular condition or whether a test for
+interaction was performed. Finally, we checked whether gene set enrichment
+analysis was applied to genes significant in one, but not the other
+condition in order to find gene sets and pathways regulated by one, but not
+the other condition.
+
 
 ```{r lit_surveys}
 get_keywords <- function(file, pattern="^([a-zA-Z]+): *(.*)") {
@@ -807,10 +870,10 @@ tab2 <- tab %>%
 pander(tab2)
 ```
 
-In an informal survey of articles from three journals (Tab. 2) we found
+We found 
 that of the 
 `r tab2$Analysed[nrow(tab2)]` analysed articles
- which used the term "venn diagram" and
+ which used the terms "venn diagram" and
 "differential expression", at least 
 `r tab2$Incorrect[nrow(tab2)]`
 were using Venn diagrams to compare
@@ -818,33 +881,51 @@ statistical significance with lack thereof by referring to "unique",
 "specific", "solely regulated" or "exclusive" DEGs. Out of these, at least 
 `r tab$Enrichment[nrow(tab2)]`
 coupled the VDs with some form of gene set enrichment analysis on the
-set of supposedly "specific" DEGs.
+set of supposedly "specific" DEGs. In summary, in at least a quarter of the
+papers on differential expression in which a venn diagram was used, it was
+illustrating an incorrect statistical procedure which may result in
+artifactual gene set enrichments.
+
+## Discussion
 
 Drawing conclusions from comparing significance with lack thereof is a
 common statistical fallacy [@gelman2006difference]. Just as absence of evidence is not evidence of
 absence, the failure to reject the null hypothesis does not consitute the
 same level of evidence as rejecting it. However, when such an incorrect
-analysis is combined with downstream functional analysis – i.e., gene set
-enrichments of genes "specific" to one or another comparison – the
-resulting pathways or gene ontologies are misleadingly relevant, yielding
-gene sets associated with immune answer for research hypotheses involving
-an infectious disease, or cancer pathways if the underlying research
-hypothesis involved cancer treatment. Such results may be hard to resist
-for an involved researcher, especially if the correct analysis of
-interactions does not show any significant differences.
+analysis is combined with downstream functional analysis, the
+resulting pathways or gene ontologies are misleadingly relevant. For
+example, the identified gene sets are associated with immune answer for
+research hypotheses involving an infectious disease, or cancer pathways if
+the underlying research hypothesis involved cancer treatment. Such results
+may appear reasonable in the given context, especially if the correct
+analysis of interactions does not show any significant differences. This
+effect is persistent or even exacerbated for larger sample sizes (Fig.
+4).
 
-That is not to say that VDs are not a useful tool, even in the context of
-transcriptomics and gene set enrichments, if used correctly. For example, analysis of an
+We found that this type of incorrect analysis occurs in more than a quarter
+of papers where the procedure was illustrated with a VD.  That is not to
+say that VDs are not a useful tool, even in the context of transcriptomics
+and gene set enrichments, if used correctly. For example, analysis of an
 intersection of DEGs (i.e., by considering genes from the overlap in a VD)
 is not an incorrect procedure.  Genes in the overlapping part of a VD are
 significant in both (or all) comparisons, hence no comparison between
 significance and non-significance is made. 
 
+Our literature survey showed that even in cases where a VD is absent from a
+paper, at least two other ways are not uncommon. Firstly, the direct
+comparison of gene set enrichment results: that is, drawing conclusions
+from the fact that a gene set enrichment result was significant in one
+comparison only.  Second, while Venn diagrams are often used to illustrate
+the numbers of "specific" DEGs and so present a mean to find examples of
+this fallacy in scientific literature, researches often test for enrichment
+these "specific" genes without using the phrase "Venn diagram" or even
+clearly stating how the lists of "specific" genes were derived. In all
+these cases, the analysis boils down to comparing results significant in
+one, but not in another comparison.
+
 As an alternative to Venn diagrams and the downstream gene set enrichment
 analysis, two approaches can be considered.
-
-
-Statistical analysis, as shown above, involves a test for interaction which
+The correct statistical approach, as shown above, involves a test for interaction which
 can reveal genes for which the impact of treatment significantly differ
 between the groups. The results can then be plugged into a gene set
 enrichment analysis the usual way.  Unfortunately, this has two major
@@ -890,34 +971,13 @@ between the two comparisons, in especially with combination of color coding
 the genes either are significant in the interaction or using the disco
 score (see Fig. 2, *E* for an example).
 
-
-While the use of VDs in combination with the incorrect gene set
-enrichment analysis is common, it is not the only way of achieving
-artifactual and incorrect conclusions by means of comparing significant
-with non-significant results in transcriptomics and other high-throughput
-applications. VDs appear to be symptomatic of the assumption that if a gene
-is significantly regulated in one comparison, but does not show a
-significant difference in another one, then this gene is "specific" to this
-first comparison. However, VDs may also lead one to this reasoning; for
-example, the VD on Fig. 1A practically begs the question: what do these 
-`r sum(res.merged$DEG.g1 & !res.merged$DEG.g2)` 
-genes, which are significant in G1 only, have in common?
-
-Our literature survey showed that even in cases where a VD is absent from a
-paper, at least two other ways are not uncommon. Firstly, the direct
-comparison of gene set enrichment results: that is, drawing conclusions
-from the fact that a gene set enrichment result was significant in one
-comparison only.  Second, while Venn diagrams are often used to illustrate
-the numbers of "specific" DEGs and so present a mean to find examples of
-this fallacy in scientific literature, researches often test for enrichment
-these "specific" genes without using the phrase "Venn diagram" or even
-clearly stating how the lists of "specific" genes were derived. In all
-these cases, the analysis boils down to comparing results significant in
-one, but not in another comparison.
-
-The use of Venn diagrams to illustrate specific differences between
-comparisons should therefore be abandoned in favor of statistically correct
-approaches. Furthermore, gene set enrichment analysis must never be applied
+Defining condition-specific genes based on significant difference in one,
+but no significant difference in another comparison is thus not only a
+statistical fallacy, but when combined with gene set enrichment analysis
+also one which can lead to potentially sound-looking results. This method
+of obtaining specific differences between conditions should therefore be
+abandoned in favor of statistically correct approaches.
+Furthermore, gene set enrichment analysis must never be applied
 to sets of genes defined as significant in one comparison, but not the
 other.
 
@@ -951,7 +1011,7 @@ GO terms have been sourced from the R package msigdbr, version
 
 ### Literature survey
 
-An informal literature survey was performed using Google Scholar to
+A literature survey was performed using Google Scholar to
 estimate the frequency of the incorrect use of Venn diagrams. We searched
 for articles from 2020 mentioning the phrases "differential expression" and "venn
 diagram" in the Scientific Reports journal. The journal was
@@ -968,6 +1028,9 @@ Venn diagrams for a purpose other than to compare genes significant in one
 condition, but not significant in another condition or (iii) for which a
 clear-cut error could not be indicated past any reasonable doubt were not
 considered incorrect.
+The results of the literature survey (including links to papers classified
+as incorrectly analysing the interaction) are included in the manuscript
+sources.
 
 ## Bibliography
 

@@ -106,4 +106,18 @@ get_specific_num <- function(merged_res, lfc_thr=0, padj_thr=0.05) {
   n_spec
 }
 
+## returns a numeric vector. Each number represents the number of
+## DEGs (in both groups) for one replicate.
+get_total_num <- function(merged_res, lfc_thr=0, padj_thr=0.05) {
+
+  n_spec <- map_int(merged_res, ~ {
+    res <- .x %>%
+      mutate(DEG.g1 = !is.na(padj.g1) & abs(log2FoldChange.g1) > lfc_thr & padj.g1 < padj_thr) %>%
+      mutate(DEG.g2 = !is.na(padj.g2) & abs(log2FoldChange.g2) > lfc_thr & padj.g2 < padj_thr) 
+    sum((res$DEG.g1 | res$DEG.g2))
+  })
+
+  n_spec
+}
+
 
