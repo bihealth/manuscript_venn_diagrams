@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "Venn diagrams as indicators of erroneous statistical reasoning in transcriptomics."
 author: "January Weiner^1,†^, Benedikt Obermayer^1^ and Dieter Beule^1^"
 date: "`r Sys.Date()`"
 outputoff:
@@ -27,41 +27,26 @@ XXcsl: templates/nature-medicine.csl
 
 ## Abstract
 
-Version 1: In statistics, comparing the effect of a treatment in two different
-conditions requires the use of an appropriate statistical test to assert
-the significance of interaction between the treatment and the condition.
-However, a common procedure is to define genes specifically regulated in
-one, but not the other condition by selecting genes which show a
-statistically significant difference in one condition only. Here we show
-that not only is this procedure incorrect, but moreover, when combined with
-gene set enrichment analyses, it leads to statistically significant, but
-incorrect results. These gene set enrichments are the effect of false
-negatives and reflect only the differences in gene expression due to
-treatment and not due to the difference between conditions. Thus, the
-combination of incorrect statistical analysis and gene set enrichment
-analysis may result in particularly misleading artifacts.
-
-Version 2: A common application of differential expression analysis is to
-ask which genes are differentially expressed upon treatment in one
-condition only. One of the approaches is to define genes specific to a
-condition by testing for significant difference in expression separately
-in the two conditions, and then selecting genes which show statistical
-significance in one condition only. This approach may then be combined with
+A common application of differential expression analysis is to
+find genes that are differentially expressed upon treatment in only one
+out of several groups of samples. One of the approaches is to test 
+for significant difference in expression between treatment and control separately
+in the two groups, and then select genes that show statistical
+significance in one group only. This approach is then often combined with
 a gene set enrichment analysis to find pathways and gene sets
-characteristic for this condition only.
+regulated by treatment in only this group.
 
-Here we show that this procedure is incorrect. Instead, the interaction
-between treatment and condition should be tested. Moreover, we show that
-gene set enrichment analysis applied to incorrectly defined genes specific
-to one condition only may result in misleading artifacts. Genes which show
-significant difference upon treatment in one, but not the other condition
-are enriched in gene sets related to the treatment, but not to the
-condition. Thus, while the results are apparently related to the treatment,
-they do not reflect differences in expression specific to a given
-condition.
-
-Version 3: 
-
+Here we show that this procedure is statistically incorrect and that the interaction
+between treatment and group should be tested instead. Moreover, we show
+that gene set enrichment analysis applied to such incorrectly defined genes
+group-specific genes only may result in misleading artifacts. Genes which
+show significant difference upon treatment in one, but not another group
+are enriched in gene sets associated with the treatment in general.  Thus,
+the results appear related to the problem at hand, but do not reflect the
+group-specific effect of a treatment. A literature search revealed that
+more than a quarter of papers which used a Venn diagram to illustrate the
+results of separate differential analysis  have also applied this incorrect
+reasoning.
 
 ```{r,echo=FALSE}
 ## Set default options for the knitr RMD processing
@@ -93,8 +78,8 @@ source("functions.R")
 ```{r setup}
 padj_thr <- 0.05
 lfc_thr  <- 1
-n_stratum <- 10 # 2 strata (male and female) per condition/group
-                # total number of samples n_stratum * 2 * 2 * 2
+n_stratum <- 10 # 2 strata (male and female) per group/treatment
+                # total number of samples = n_stratum * 2 * 2 * 2
 lfc_thresholds <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
 ```
 
@@ -102,13 +87,13 @@ lfc_thresholds <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
 
 ## Introduction
 
-Transcriptomic analyses commonly include more than one factor. Often, the
-question asked is whether there is a difference between conditions (first
+Experimental designs for transcriptomic analyses commonly include more than one factor. Often, the
+question asked is whether there is a difference between groups (first
 factor) with respect to reaction to a particular treatment (second
-condition). For example, we may ask whether there are differentially
+factor). For example, we may ask whether there are differentially
 expressed genes (DEGs) which are specific to a particular group of
-patients, such as interferon response elicited by a virus in one group, but
-silenced in the other group of patients. In other words, we ask whether the
+patients, e.g. interferon response elicited by a virus in one group, but
+not regulated in another group of patients. In other words, we ask whether the
 difference between control (healthy subjects) and treatment (infected
 patients) is different between two groups of individuals. This "difference
 of differences" is known in statistics as an interaction
@@ -116,8 +101,8 @@ of differences" is known in statistics as an interaction
 an appriopriate statistical test for interaction should be employed.
 
 However, another approach is widely spread [@nieuwenhuis2011erroneous].
-Instead of testing the interaction, one tests the effect of the treatment
-separately in both groups. Next, a difference between conditions is inferred if the difference
+Instead of testing the interaction, the effect of the treatment is tested
+separately in both groups. Next, a difference between groups is inferred if the difference
 is significant in one comparison, but not significant in the other. This
 approach is not correct from statistical point of view, as "the difference
 between significant and not significant is not itself statistically
@@ -126,23 +111,23 @@ comparison may be 0.009, and in the other comparison 0.011, thus at an
 alpha level of 0.01 the difference will be statistically significant in the
 first, but not significant in the other comparison.
 
-In transcriptomics, the statistical tests are performed for thousands of
-genes. As in the general case, the correct inference of differences between
-the conditions is by testing the significance of interaction. However, in
-another approach the differences between treatment and control are tested
-in the two conditions separately, and the results are then compared. This
-can be visualized using a Venn diagram (VD, Fig. 1) showing the overall
-number of DEGs significant in both comparisons (the intersection in the VD)
-or significant in only one comparison (the remaining two fields on a VD).
-The genes which are significant in only one comparison may then be
-incorrectly defined as specific to the corresponding condition. Following
-this, gene set enrichment analysis may be applied to these genes in an
-attempt to test which pathways are specific to one, but not the other
-condition.
+In transcriptomics, statistical tests are performed for thousands of
+genes. As in the general case, the inference of differences between the
+groups should correctly be done by testing the significance of interaction
+between the group and the treatment. However, often the differences between
+treatment and control are tested in the two groups separately, and the
+results are then compared. This can be visualized using a Venn diagram (VD,
+Fig. 1) showing the overall number of DEGs significant in both comparisons
+(the intersection in the VD) or significant in only one comparison (the
+remaining two fields on a VD).  The genes which are significant in only one
+comparison may then be incorrectly defined as specifically to the corresponding
+group. Following this, gene set enrichment analysis may be applied to
+these genes in an attempt to test which pathways are specific to one, but
+not the other group.
 
 In this paper, we show that under reasonable assumptions this approach may
 result in apparent enrichments even if there are no real differences
-between the groups. To this end, we have randomly split a cohort into two
+between the groups. To this end, we randomly split a cohort into two
 groups, compared the treatment (viral infection) with controls in each of
 the groups separately and then applied gene set enrichment to the sets of
 genes significantly different in one, but not the other group.
@@ -152,7 +137,10 @@ terms are relevant to the studied project, yet while they do reflect real
 processes linked to treatment, they are not demonstrative of differences
 between the study groups. Finally, we use literature search to show that
 this incorrect approach to study group-specific treatment effects is not
-uncommon.
+uncommon. In fact, while VDs are a useful visualisation tool also in
+transcriptomics, in more than quarter of the papers where VDs were used,
+group-specific genes were defined as significant in one, but not other
+groups, and in 19% a gene set enrichment was performed.
 
 ## Results
 
@@ -309,7 +297,7 @@ by using an false discovery rate (FDR) threshold of
 and absolute log~2~ fold change (LFC) threshold of
 `r lfc_thr`. There were
 `r sum(res$g1$DEG)` 
-DE genes in the G1 group, and
+DEGs in the G1 group, and
 `r sum(res$g2$DEG)`
 in the G2 group. In total,
 `r sum(res.merged$DEG.g1 & res.merged$DEG.g2)` 
@@ -384,7 +372,7 @@ response to interleukin 7 in G2, but not in G1).
 
 
 **Fig. 1. Results of differential gene expression analysis
-and gene set enrichment analysis using an incorrect Venn diagram driven approach.**
+and gene set enrichment analysis using an incorrect approach.**
 **A**, Venn diagram showing numbers of differentially expressed genes (DEG)
 in each of the two groups, G1 and G2; **B**, Venn diagram showing numbers
 of significantly enriched GO terms in each of the two groups; **C** results
@@ -420,7 +408,7 @@ be significantly different in one group, but not the other, despite the
 fact that one does not expect any major differences between sets of
 individuals randomly drawn from one population. Thus, the conclusions drawn
 from a Venn diagram-driven gene set enrichment analysis are artefactual. Closer
-inspection of genes which belong to DEG in one group, but not the other
+inspection of genes which are DEGs in one group, but not the other
 reveals the underlying statistical fallacy (Fig. 2, *A* – *D*), that is, that difference
 between significant and non-significant is, in itself, not statistically
 significant [@gelman2006difference]. This does not necessarily mean that
@@ -575,7 +563,7 @@ DEGs are defined by a threshold in p-value adjusted for multiple testing,
 possibly combined with a threshold in log~2~ fold change. The commonly used
 Benjamini-Hochberg procedure [@benjamini1995controlling] ensures that among
 genes for which the adjusted p~adj~ < 0.05 there are at most 5% false
-positives.
+positives irrespective of the sample size.
 
 This way, we can exert control over the false positive rate (FPR, type I
 errors), keeping it at a relatively low level. However, we do not control
@@ -621,17 +609,23 @@ healthy controls to
 COVID-19 patients. Of the
 `r length(g1_spec)`
 genes significant in G1, but not in G2, 
-`r .n <- res$full %>% filter(DEG & ENSEMBL %in% g1_spec) %>% nrow; .n`
-(`r sprintf("%.0f%%", .n/length(g1_spec) * 100)`) 
+`r .n1 <- res$full %>% filter(DEG & ENSEMBL %in% g1_spec) %>% nrow; .n1`
+(`r sprintf("%.0f%%", .n1/length(g1_spec) * 100)`) 
 are significant in the full data set; 
 of the
 `r length(g2_spec)`
 genes significant in G2, but not in G1, 
-`r .n <- res$full %>% filter(DEG & ENSEMBL %in% g2_spec) %>% nrow; .n`
-(`r sprintf("%.0f%%", .n/length(g2_spec) * 100)`) 
+`r .n2 <- res$full %>% filter(DEG & ENSEMBL %in% g2_spec) %>% nrow; .n2`
+(`r sprintf("%.0f%%", .n2/length(g2_spec) * 100)`) 
 are significant in the full data set.
 Given that G1 and G2 were sampled from the total population, and since the
-FDR was set to `r padj_thr`, we can assume that at least between a third and a half of
+FDR was set to `r padj_thr`, we do not expect more than 
+`r .nfp <- ceiling(padj_thr * sum(res$full$DEG)); .nfp`
+FPs in the full data set, 
+which implicates that at least 
+`r .n1 + .n2 - .nfp` out of the `r length(g1_spec) + length(g2_spec)` 
+"specific" DEGs are true positives in the full data set.
+Thus, we can assume that at least a third of
 the genes that appeared to be "specific" in the initial analysis were, in
 fact, false negatives in one of the comparisons.
 
@@ -788,17 +782,18 @@ times higher than for total sample size of 80.
 
 @nieuwenhuis2011erroneous observed incorrect analyses of interactions in
 about half of the analysed papers from top neuroscience journals where the
-authors considered an interaction. We wanted to know if this problem is
+authors considered an experimental design allowing for a test for
+interaction. We wanted to know if this problem is
 common in transcriptomics, too. To this end, we have searched three
 journals – from broad to specialized – for the occurence of the terms
 "differential expression" with "venn diagrams" (Tab. 2). Next, we analysed
 the selected papers from year 2020 (and years 2015-2020 in one case) to
 decide whether the VD was described or referred to as showing genes
-"specific" or "unique" to a particular condition or whether a test for
+"specific" or "unique" to a particular group or whether a test for
 interaction was performed. Finally, we checked whether gene set enrichment
 analysis was applied to genes significant in one, but not the other
-condition in order to find gene sets and pathways regulated by one, but not
-the other condition.
+group in order to find gene sets and pathways regulated by one, but not
+the other group.
 
 
 ```{r lit_surveys}
@@ -911,13 +906,15 @@ is not an incorrect procedure.  Genes in the overlapping part of a VD are
 significant in both (or all) comparisons, hence no comparison between
 significance and non-significance is made. 
 
-Our literature survey showed that even in cases where a VD is absent from a
-paper, at least two other ways are not uncommon. Firstly, the direct
+While VDs appear to be frequently associated with an incorrect statistical
+reasoning, the use of VDs is not the cause.  In the absence of a VD
+illustrating the DEGs common and unique to the different study groups, two
+incorrect approaches may still be found. Firstly, the direct
 comparison of gene set enrichment results: that is, drawing conclusions
 from the fact that a gene set enrichment result was significant in one
-comparison only.  Second, while Venn diagrams are often used to illustrate
+comparison only.  Second, while VDs are often used to illustrate
 the numbers of "specific" DEGs and so present a mean to find examples of
-this fallacy in scientific literature, researches often test for enrichment
+this fallacy in scientific literature, researches test for enrichment
 these "specific" genes without using the phrase "Venn diagram" or even
 clearly stating how the lists of "specific" genes were derived. In all
 these cases, the analysis boils down to comparing results significant in
@@ -971,11 +968,11 @@ between the two comparisons, in especially with combination of color coding
 the genes either are significant in the interaction or using the disco
 score (see Fig. 2, *E* for an example).
 
-Defining condition-specific genes based on significant difference in one,
+Defining group-specific genes based on significant difference in one,
 but no significant difference in another comparison is thus not only a
 statistical fallacy, but when combined with gene set enrichment analysis
 also one which can lead to potentially sound-looking results. This method
-of obtaining specific differences between conditions should therefore be
+of obtaining specific differences between groups should therefore be
 abandoned in favor of statistically correct approaches.
 Furthermore, gene set enrichment analysis must never be applied
 to sets of genes defined as significant in one comparison, but not the
@@ -1009,23 +1006,30 @@ version
 GO terms have been sourced from the R package msigdbr, version
 `r packageVersion("msigdbr")`.
 
+### Simulation study
+
+We have generated replicates of the example study for different log~2~ fold
+change thresholds (`r paste(lfc_thresholds, sep=", ")`) and three different
+sample sizes (40, 80 and 160, corresponding to sample size per
+group/treatment combination of 10, 20 and 40). For each replicate, the full
+procedure as described above was repeated, and numbers of DEGs and
+significantly enriched terms were collected.
+
 ### Literature survey
 
 A literature survey was performed using Google Scholar to
 estimate the frequency of the incorrect use of Venn diagrams. We searched
 for articles from 2020 mentioning the phrases "differential expression" and "venn
-diagram" in the Scientific Reports journal. The journal was
-selected because it represents a wide spectrum of research areas, the
-articles are available through an open access license and there is a large
-number of publications per year. For each of the papers identified, we
+diagram" in three journals: Scientific Reports (2020), Nature Communications (2020) and
+Science Immunology (2015-2020). For each of the papers identified, we
 checked whether (i) the authors used the VD to show differentially expressed
 transcripts significant in one comparison, but not another, (ii) the
 authors discussed "unique", "non-overlapping" or "specific" regions of the
 Venn diagram and (iii) whether this was coupled to gene set enrichment
 analysis is any form. Articles which (i) focused only on the intersections
-of the Venn diagrams (genes common to all conditions), or (ii) which used the
+of the Venn diagrams (genes common to all groups), or (ii) which used the
 Venn diagrams for a purpose other than to compare genes significant in one
-condition, but not significant in another condition or (iii) for which a
+groups, but not significant in other groups or (iii) for which a
 clear-cut error could not be indicated past any reasonable doubt were not
 considered incorrect.
 The results of the literature survey (including links to papers classified
