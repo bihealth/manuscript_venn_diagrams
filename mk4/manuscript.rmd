@@ -694,6 +694,12 @@ fold change threshold set to `r lfc_thr`.
 ## the necessary replicates.
 
 outdir <- "montecarlo"
+merged_res_fn <- file.path(outdir, "merged_res.rds")
+
+if(!file.exists(merged_res_fn)) {
+  warning("Running simulations. This will take a long time.")
+  source("montecarlo.R")
+}
 
 merged_res <- readRDS(file.path(outdir, "merged_res.rds"))
 
@@ -1035,6 +1041,16 @@ considered incorrect.
 The results of the literature survey (including links to papers classified
 as incorrectly analysing the interaction) are included in the manuscript
 sources.
+
+
+```{r}
+sink(file="sessionInfo.txt")
+sessionInfo()
+sink()
+```
+
+
+
 
 ## Bibliography
 
