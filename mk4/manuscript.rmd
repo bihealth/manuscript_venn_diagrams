@@ -1044,9 +1044,7 @@ sources.
 
 
 ```{r}
-sink(file="sessionInfo.txt")
-sessionInfo()
-sink()
+sessioninfo::session_info(to_file=TRUE)
 ```
 
 
