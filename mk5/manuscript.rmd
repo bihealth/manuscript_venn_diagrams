@@ -93,7 +93,7 @@ difference between the control group (healthy subjects) and the treatment
 group (infected patients) is different between two groups of individuals.
 This "difference of differences" is known in statistics as an interaction
 [@blalock1965theory]. To find out whether it is statistically significant,
-an appriopriate statistical test for interaction should be employed.
+an appropriate statistical test for interaction should be employed.
 
 However, another approach is widely spread [@nieuwenhuis2011erroneous].
 Instead of testing the interaction, the effect of the treatment is tested
@@ -134,7 +134,7 @@ terms are relevant to the biological question at hand, yet while they do
 reflect real processes linked to viral infection, they do not correspond to
 the differences between the study groups. Finally, we use literature search to
 show that this incorrect approach to study group-specific treatment effects
-is not uncommon. In fact, while VDs are a useful visualisation tool also in
+is not uncommon. In fact, while VDs are a useful visualization tool also in
 transcriptomics, in more than quarter of the papers where VDs were used,
 group-specific genes were defined as significant in one, but not other
 groups, and in 19% of the papers a gene set enrichment was performed.
@@ -150,7 +150,7 @@ individuals. In both groups, there is an equal number of healthy
 individuals (labeled "Ctrl" on figures below) 
 or patients infected with Sars-Cov-2 (labeled "SC2"). Our aim is to understand
 the differences between G1 and G2 in the response to infection. For
-example, we ask which genes or pathways are specifically upregulated by SC2
+example, we ask which genes or pathways are specifically up-regulated by SC2
 infection in G1 as compared to G2, and vice versa. In the following, we
 used the data set GSE156063 [@mick2020upper] in two approaches (an
 incorrect and the correct one) to arrive at opposite conclusions.
@@ -232,6 +232,7 @@ annot$GENENAME <- .tmp[ match(annot$ENSEMBL, names(.tmp)) ]
 sel <- covar$group %in% c("no", "SC2")
 counts <- counts[ , sel ]
 covar  <- covar[ sel, ]
+lcpm   <- lcpm[ , sel ]
 covar$group <- as.character(covar$group)
 
 set.seed(0123)
@@ -343,7 +344,7 @@ saveRDS(gsea_res.merged, file="gsea_res_merged.rds")
 ```
 
 To understand which
-pathways are upregulated in each of the two groups, we used a standard generation I
+pathways are up-regulated in each of the two groups, we used a standard generation I
 gene set enrichment analysis — a hypergeometric test — on the DEGs in each
 group. Gene sets for the gene set enrichment analysis were taken from the Gene Ontology (GO) database.
 Gene sets with more than `r max_mod_size` or 
@@ -405,7 +406,8 @@ In fact, repeated re-sampling always results in some genes being found to
 be significantly different in one group, but not the other, despite the
 fact that one does not expect any major differences between sets of
 individuals randomly drawn from a single population. Thus, the conclusions drawn
-from a Venn diagram-driven gene set enrichment analysis are artefactual. Closer
+from a Venn diagram-driven gene set enrichment analysis are based on
+artifacts. Closer
 inspection of genes which are DEGs in one group, but not the other
 reveals the underlying statistical fallacy (Fig. 2, *A* – *D*), that is, that difference
 between significant and non-significant is, in itself, not statistically
@@ -495,6 +497,7 @@ sel   <- res.merged %>% filter(SYMBOL %in% gsgenes) %>% arrange(pvalue.g2) %>%
   dplyr::slice(1:4) %>% pull(ENSEMBL)
 
 sample_sel <- c(g1, g2)
+
 
 group_lab <- gsub("_no", "/Ctrl", gsub("_SC2", "/SC2", covar$group.disease))
 
@@ -598,9 +601,9 @@ g2_spec <- res.merged %>% filter(!DEG.g1 & DEG.g2) %>% pull(ENSEMBL)
 
 These FNs occur
 at a much higher rate within the sets of DEGs defined by the
-non-overlaping areas of the VDs, that is DEGs considered to be "specific"
+non-overlapping areas of the VDs, that is DEGs considered to be "specific"
 for one group or other in a naive approach.
-To illustrate this phenomenon, we have analysed the full data set from which G1 and G2
+To illustrate this phenomenon, we have analyzed the full data set from which G1 and G2
 were drawn (Fig. 3), comparing the 
 `r sum(covar$disease == "no") `
 healthy controls to 
@@ -640,7 +643,7 @@ which are not related to differences between the two groups.
 **Fig. 3. Area-proportional Venn diagram showing overlaps in DEGs between
 G1, G2 and the full data set.** The majority of genes which have been labeled
 as DEGs in only one of the groups G1, G2 are DEGs when all data were
-analysed.
+analyzed.
 
 ```{r fig3,dpi=300,dev="png"}
 tmp <- merge(res.merged, res$full, by="ENSEMBL")
@@ -786,12 +789,12 @@ times higher than for total sample size of 80.
 ### Incorrect analysis of interactions is common in transcriptomics
 
 @nieuwenhuis2011erroneous observed incorrect analyses of interactions in
-about half of the analysed papers from top neuroscience journals where the
+about half of the analyzed papers from top neuroscience journals where the
 authors considered an experimental design allowing for a test for
 interaction. We wanted to know if this problem is
 common in transcriptomics, too. To this end, we have searched three
-journals – from broad to specialized – for the occurence of the terms
-"differential expression" with "venn diagrams" (Tab. 2). Next, we analysed
+journals – from broad to specialized – for the occurrence of the terms
+"differential expression" with "venn diagrams" (Tab. 2). Next, we analyzed
 the selected papers from year 2020 (and years 2015-2020 in one case) to
 decide whether the VD was described or referred to as showing genes
 "specific" or "unique" to a particular group or whether a test for
@@ -837,8 +840,8 @@ names(finfo) <- map_chr(finfo, ~ .x[["journal"]])
 We searched for papers using Google Scholar and the keywords "venn diagram"
 and "differential expression".
 *Journal*, journal title; *Years*, publication dates; *Total*, total number
-of papers found using the search phrase; *Analysed*, total number of papers
-which have been analysed for correctness; *Incorrect*, total number
+of papers found using the search phrase; *Analyzed*, total number of papers
+which have been analyzed for correctness; *Incorrect*, total number
 (percentage) of
 papers in which the Venn diagram was combined with comparing significance
 to non-significance; *Enrichment*, total number (percentage) of papers
@@ -849,21 +852,21 @@ tab <- map_dfr(finfo, ~
                data.frame(Journal=.x$journal,
                           Years=.x$years,
                           Total=.x$total,
-                          Analysed=.x$analysed,
+                          Analyzed=.x$analysed,
                           Incorrect=.x$incorrect_count,
                           Enrichment=.x$incorrect_count - .x$incorrect_count_vdonly))  %>%
-  mutate(Analysed=as.numeric(Analysed)) %>%
+  mutate(Analyzed=as.numeric(Analyzed)) %>%
   mutate(Total=as.numeric(Total))
 
 
 tab <- rbind(tab, 
              data.frame(Journal="**Total:**", Years="", Total=sum(tab$Total),
-                        Analysed=sum(tab$Analysed),
+                        Analyzed=sum(tab$Analyzed),
                         Incorrect=sum(tab$Incorrect),
                         Enrichment=sum(tab$Enrichment)))
 tab2 <- tab %>%
-  mutate(Incorrect=sprintf("%d (%.0f%%)", Incorrect, 100 * Incorrect / Analysed)) %>%
-  mutate(Enrichment=sprintf("%d (%.0f%%)", Enrichment, 100 * Enrichment / Analysed))
+  mutate(Incorrect=sprintf("%d (%.0f%%)", Incorrect, 100 * Incorrect / Analyzed)) %>%
+  mutate(Enrichment=sprintf("%d (%.0f%%)", Enrichment, 100 * Enrichment / Analyzed))
 
 
 pander(tab2)
@@ -871,7 +874,7 @@ pander(tab2)
 
 We found 
 that of the 
-`r tab2$Analysed[nrow(tab2)]` analysed articles
+`r tab2$Analyzed[nrow(tab2)]` analyzed articles
  which used the terms "venn diagram" and
 "differential expression", at least 
 `r tab2$Incorrect[nrow(tab2)]`
@@ -889,7 +892,7 @@ artifactual gene set enrichments.
 
 Drawing conclusions from comparing significance with lack thereof is a
 common statistical fallacy [@gelman2006difference]. Just as absence of evidence is not evidence of
-absence, the failure to reject the null hypothesis does not consitute the
+absence, the failure to reject the null hypothesis does not constitute the
 same level of evidence as rejecting it. However, when such an incorrect
 analysis is combined with downstream functional analysis, the
 resulting pathways or gene ontologies are misleadingly relevant. For
@@ -964,8 +967,8 @@ using a gene set enrichment algorithm.
 
 Visualization of interaction for individual genes is straightforward (see
 for example Fig. 2, *A-D*). However, the point of VDs is to show a grand
-overview of the whole analysis summarising thousands of results for the
-analysed genes. As an alternative of such an overview, we suggest plotting
+overview of the whole analysis summarizing thousands of results for the
+analyzed genes. As an alternative of such an overview, we suggest plotting
 the log~2 fold changes in one comparison against log~2~ fold changes in the
 second comparison. This allows an intuitive assessment of the differences
 between the two comparisons, in especially in combination with color coding
