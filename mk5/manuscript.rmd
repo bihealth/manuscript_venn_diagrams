@@ -689,7 +689,7 @@ threshold for sample size of 40 per group (20 per group/treatment
 combination), bottom row shows the influence of sample size for a log~2~
 fold change threshold set to `r lfc_thr`.
 
-```{r montecarlo,cache=TRUE,fig.width=7.5,fig.height=6.5}
+```{r montecarlo,cache=TRUE,fig.width=8,fig.height=6}
 ## note: given that the monte carlo simulation is quite time consuming, we
 ## have included the code for it in another file, `montecarlo.R`. If trying
 ## to replicate this manuscript, please execute that file first to generate
@@ -717,7 +717,7 @@ colnames(by_fdr) <- fdr_thresholds
 by_fdr <- by_fdr %>% pivot_longer(everything(), names_to = "lfc")
 by_fdr$lfc <- factor(by_fdr$lfc, levels=fdr_thresholds)
 g0 <- ggplot(by_fdr, aes(x=lfc, y=value)) + geom_violin() +
-  ylab("Number of DEGs") + xlab("FDR threshold")
+  ylab("DEGs") + xlab("FDR threshold")
 
 by_lfc_thr <- map_dfc(lfc_thresholds, ~ 
                       get_specific_num(merged_res[["10"]], lfc_thr=.x,
@@ -726,7 +726,9 @@ colnames(by_lfc_thr) <- lfc_thresholds
 by_lfc_thr <- by_lfc_thr %>% pivot_longer(everything(), names_to = "lfc")
 
 g1 <- ggplot(by_lfc_thr, aes(x=lfc, y=value)) + geom_boxplot() +
-  ylab("Number of DEGs") + xlab("log2 fold change threshold")
+  ylab("DEGs") + 
+  xlab(expression(log[2]~fold~change~threshold)) +
+  theme(text=element_text(size=16))
 
 gsea_files <- list.files(path=outdir, pattern="gsea_.*rds", full.names=TRUE)
 gsea_by_lfc_thr_files <- gsea_files[ grepl("gsea_res_10", gsea_files) ]
@@ -737,7 +739,9 @@ gsea_by_lfc_thr <- map_dfc(gsea_by_lfc_thr_files, gsea_specific_num)
 gsea_by_lfc_thr <- gsea_by_lfc_thr %>% pivot_longer(everything(), names_to = "lfc")
 
 g2 <- ggplot(gsea_by_lfc_thr, aes(x=lfc, y=value)) + geom_boxplot() +
-  ylab("Number of enriched gene sets") + xlab("log2 fold change threshold")
+  ylab("Enriched gene sets") + 
+  xlab(expression(log[2]~fold~change~threshold)) +
+  theme(text=element_text(size=16))
 
 
 by_ssize <- map_dfc(c("5", "10", "20"), 
@@ -747,7 +751,8 @@ colnames(by_ssize) <- c(10, 20, 40)
 by_ssize <- by_ssize %>% pivot_longer(everything(), names_to = "ss")
 
 g3 <- ggplot(by_ssize, aes(x=ss, y=value)) + geom_boxplot() +
-  ylab("Number of DEGs") + xlab("Number of samples per group/treatment")
+  ylab("DEGs") + xlab("Samples per group/treatment") +
+  theme(text=element_text(size=16))
 
 gsea_by_ss_files <- gsea_files[ grepl("gsea_res_[0-9]*_1\\.rds", gsea_files) ]
 names(gsea_by_ss_files) <- gsub("montecarlo/gsea_res_([0-9]*)_.*\\.rds", "\\1",
@@ -760,7 +765,8 @@ gsea_by_ss <- Reduce(rbind, gsea_by_ss)
 gsea_by_ss$ss <- factor(as.numeric(gsea_by_ss$ss) * 2, levels=c(10, 20, 40))
 
 g4 <- ggplot(gsea_by_ss, aes(x=ss, y=value)) + geom_boxplot() +
-  ylab("Number of enriched gene sets") + xlab("Number of samples per group/treatment")
+  ylab("Enriched gene sets") + xlab("Samples per group/treatment") +
+  theme(text=element_text(size=16))
 
 plot_grid(g1, g2, g3, g4, labels = LETTERS[1:4])
 ```
