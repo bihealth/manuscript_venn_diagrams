@@ -36,7 +36,7 @@ interaction between treatment and group should be tested instead. Moreover,
 we show that gene set enrichment analysis applied to such incorrectly
 defined genes group-specific genes may result in misleading artifacts.
 Due to the presence of false negatives, genes significant in one, but not
-the other group are enriched in gene sets which which correspond to the
+the other group are enriched in gene sets which correspond to the
 overall effect of the treatment.  Thus, the results appear related to the
 problem at hand, but do not reflect the group-specific effect of a
 treatment. A literature search revealed that more than a quarter of papers
@@ -45,7 +45,7 @@ differential analysis  have also applied this incorrect reasoning.
 
 ```{r,echo=FALSE}
 ## Set default options for the knitr RMD processing
-knitr::opts_chunk$set(echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=5,cache=FALSE,autodep=TRUE, results="hide")
+knitr::opts_chunk$set(echo=FALSE,warning=FALSE,message=FALSE,fig.width=5,fig.height=5,cache=FALSE,autodep=TRUE, results="hide",dev="jpeg")
 ```
 
 ```{r libraries,cache=FALSE}
@@ -378,15 +378,17 @@ of significantly enriched GO terms in each of the two groups; **C** results
 of gene set enrichment analysis for genes "specific" to group G1; **D**, results of gene set
 enrichment analysis for genes "specific" to group G2 (only top 10 terms are shown).
 
-```{r fig1, fig.width=15,fig.height=5.5,dpi=300,dev="png"}
+```{r fig1, fig.width=15,fig.height=5.5,dpi=300,dev="jpeg"}
 p1 <- ggvenn(list(G1=res$g1 %>% filter(DEG) %>% pull(ENSEMBL),
                          G2=res$g2 %>% filter(DEG) %>% pull(ENSEMBL)),
              show_percentage=FALSE) +
-      ggtitle("Differentially expressed genes")
+      labs(title="Differentially expressed genes") +
+      ylim(-1, 1.4)
 p2 <- ggvenn(list(G1=gsea_res$g1 %>% pull(ID),
                          G2=gsea_res$g2 %>% pull(ID)),
               show_percentage=FALSE) +
-      ggtitle("Enriched GO terms")
+      labs(title="Enriched GO terms") +
+      ylim(-1, 1.4)
 
 col1 <- plot_grid(p1, p2, labels="AUTO", nrow=2)
 
@@ -486,7 +488,7 @@ coefficient between log~2~ fold changes is
 `r with(res.merged, format.pval(cor(log2FoldChange.g1, log2FoldChange.g2), digits=2))`.
 
 
-```{r fig2, fig.width=10, fig.height=5.5, dpi=300,dev="png"}
+```{r fig2, fig.width=10, fig.height=5.5, dpi=300,dev="jpeg"}
 #id    <- gsub(" ", "_", toupper("response to interferon beta"))
 #gstitle    <- "GOBP_TOLL_LIKE_RECEPTOR_4_SIGNALING_PATHWAY"
 gstitle    <- "GOBP_INTERLEUKIN_7_MEDIATED_SIGNALING_PATHWAY"
@@ -645,7 +647,7 @@ G1, G2 and the full data set.** The majority of genes which have been labeled
 as DEGs in only one of the groups G1, G2 are DEGs when all data were
 analyzed.
 
-```{r fig3,dpi=300,dev="png"}
+```{r fig3,dpi=300,dev="jpeg"}
 tmp <- merge(res.merged, res$full, by="ENSEMBL")
 tmp <- tmp[ , c("DEG.g1", "DEG.g2", "DEG") ]
 colnames(tmp) <- c("G1", "G2", "Full dataset")
@@ -995,9 +997,9 @@ significant in one comparison, but not the other.
 
 ### Methods availability
 
-This manuscript has been written in Rmarkdown [@xie2018r].  
+This manuscript has been written in R markdown [@xie2018r].  
 All statistical calculations required to replicate the findings and figures
-are contained in the source Rmarkdown file.  The Rmarkdown file, along with
+are contained in the source R markdown file.  The R markdown file, along with
 additional files required to recreate this manuscript as well as the
 results
 of literature survey have been uploaded to
